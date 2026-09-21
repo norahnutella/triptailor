@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { requireAuth } from '../middleware/authMiddleware.js';
-import { listTrips, createTrip, getTrip, updateTrip, addMember, searchUsers, getMessages, sendMessage } from '../controllers/tripController.js';
+import { listTrips, createTrip, getTrip, updateTrip, addMember, removeMember, searchUsers, getMessages, sendMessage } from '../controllers/tripController.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -12,6 +12,7 @@ router.get('/:tripId/messages', getMessages);
 router.post('/:tripId/messages', sendMessage);
 router.put('/:tripId', updateTrip);
 router.post('/:tripId/members', addMember);
+router.delete('/:tripId/members/:userId', removeMember);
 router.get('/:tripId', getTrip);
 
 export default router;

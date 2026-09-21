@@ -112,6 +112,21 @@ export async function addMember(req, res) {
   }
 }
 
+export async function removeMember(req, res) {
+  try {
+    const trip = await Trip.findOne({ tripId: req.params.tripId, owner: req.user._id });
+    if (!trip) return res.status(404).json({ message: 'Trip not found or only the trip owner can remove members.' });
+    if (trip.owner.toString() === String(req.params.userId)) return res.status(400).json({ message: 'The trip owner cannot be removed.' });
+    trip.members = trip.members.filter((id) => id.toString() !== String(req.params.userId));
+    await trip.save();
+    await trip.populate('owner', 'name email avatar role');
+    await trip.populate('members', 'name email avatar role');
+    res.json({ trip: mapTrip(trip) });
+  } catch (error) {
+    res.status(400).json({ message: error.message || 'Unable to remove member.' });
+  }
+}
+
 export async function searchUsers(req, res) {
   try {
     const q = String(req.query.q || '').trim();

@@ -154,106 +154,98 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
           </div>
         </div>
 
-        {/* Header Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
-          {user && onRegenerate && (
-            <button
-              onClick={onRegenerate}
-              className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
-              title="Create a fresh order from the current stops"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Regenerate</span>
-            </button>
-          )}
-
-          {user && onUpdateTrip && (isEditing ? (
-            <>
-              <button onClick={saveEdits} className="px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5">
-                <Save className="w-3.5 h-3.5" />
-                <span>Apply edits</span>
+        {/* Clean, grouped action area */}
+        <div className="flex flex-col items-stretch gap-3 sm:items-end">
+          <div className="flex flex-wrap items-center justify-end gap-2" role="toolbar" aria-label="Itinerary actions">
+            {user && onSave && (
+              <button
+                onClick={onSave}
+                disabled={isSaved}
+                className="order-1 inline-flex items-center gap-2 rounded-xl bg-orange-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-orange-700 disabled:cursor-default disabled:bg-orange-100 disabled:text-orange-800"
+              >
+                <Save className="h-4 w-4" />
+                <span>{isSaved ? 'Saved' : 'Save itinerary'}</span>
               </button>
-              <button onClick={() => setIsEditing(false)} className="p-2 text-slate-500 hover:bg-slate-100 rounded-xl cursor-pointer" aria-label="Cancel editing">
-                <X className="w-3.5 h-3.5" />
+            )}
+
+            {user && onRegenerate && (
+              <button
+                onClick={onRegenerate}
+                className="order-2 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 transition-colors hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700"
+                title="Generate a fresh itinerary arrangement"
+              >
+                <RefreshCw className="h-4 w-4" />
+                <span>Regenerate</span>
               </button>
-            </>
-          ) : (
-            <button onClick={startEditing} className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5">
-              <Pencil className="w-3.5 h-3.5" />
-              <span>Edit</span>
-            </button>
-          ))}
+            )}
 
-          {user && onSave && (
+            {onOpenPrint && (
+              <button
+                onClick={onOpenPrint}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50"
+                title="Print itinerary"
+              >
+                <Printer className="h-4 w-4" />
+                <span className="hidden md:inline">Print</span>
+              </button>
+            )}
+
+            {onOpenChat && (
+              <button
+                onClick={onOpenChat}
+                className="relative inline-flex items-center gap-2 rounded-xl bg-slate-900 px-3.5 py-2.5 text-xs font-bold text-white transition-colors hover:bg-slate-800"
+                title="Open Squad Chat"
+              >
+                <MessageSquare className="h-4 w-4 text-orange-400" />
+                <span className="hidden sm:inline">Squad Chat</span>
+                {unreadChatCount > 0 && (
+                  <span className="rounded-full bg-orange-500 px-1.5 py-0.5 text-[10px] font-extrabold">{unreadChatCount}</span>
+                )}
+              </button>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {user && onUpdateTrip && (isEditing ? (
+              <>
+                <button onClick={saveEdits} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-slate-800">
+                  <Save className="h-3.5 w-3.5" />
+                  Apply edits
+                </button>
+                <button onClick={() => setIsEditing(false)} className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100" aria-label="Cancel editing">
+                  <X className="h-4 w-4" />
+                </button>
+              </>
+            ) : (
+              <button onClick={startEditing} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800">
+                <Pencil className="h-3.5 w-3.5" />
+                Edit details
+              </button>
+            ))}
+
+            {user && (
+              <button onClick={onOpenInvite} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800" title="Invite travel companions">
+                <Users className="h-3.5 w-3.5" />
+                Invite
+              </button>
+            )}
+
             <button
-              onClick={onSave}
-              disabled={isSaved}
-              className="px-3 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-100 disabled:text-orange-800 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:cursor-default flex items-center gap-1.5"
+              onClick={() => {
+                navigator.clipboard?.writeText(window.location.href);
+                showToast('Link copied to clipboard!');
+              }}
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
             >
-              <Save className="w-3.5 h-3.5" />
-              <span>{isSaved ? 'Saved' : 'Save trip'}</span>
+              <Share2 className="h-3.5 w-3.5" />
+              Share
             </button>
-          )}
 
-          {/* Squad Chat Button with Unread Badge */}
-          {onOpenChat && (
-            <button
-              onClick={onOpenChat}
-              className="relative px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
-              title="Open Squad Discussion"
-            >
-              <MessageSquare className="w-3.5 h-3.5 text-orange-400" />
-              <span>Squad Chat</span>
-              {unreadChatCount > 0 && (
-                <span className="ml-1 px-1.5 py-0.2 bg-orange-500 text-white text-[10px] font-extrabold rounded-full animate-pulse">
-                  {unreadChatCount}
-                </span>
-              )}
+            <button onClick={() => onNavigate('create')} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-orange-700 transition-colors hover:bg-orange-50">
+              <Plus className="h-3.5 w-3.5" />
+              New trip
             </button>
-          )}
-
-          {/* Printable Itinerary Generator Button */}
-          {onOpenPrint && (
-            <button
-              onClick={onOpenPrint}
-              className="px-3.5 py-2 bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200/80 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
-              title="Generate and print formatted itinerary"
-            >
-              <Printer className="w-3.5 h-3.5 text-orange-600" />
-              <span>Print Itinerary</span>
-            </button>
-          )}
-
-          {/* Invite Option - ONLY SHOWN ONCE LOGGED IN & AUTHENTICATED */}
-          {user && (
-            <button
-              onClick={onOpenInvite}
-              className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
-              title="Invite travel companions"
-            >
-              <Users className="w-3.5 h-3.5 text-slate-600" />
-              <span>Invite</span>
-            </button>
-          )}
-
-          <button
-            onClick={() => {
-              navigator.clipboard?.writeText(window.location.href);
-              showToast('Link copied to clipboard!');
-            }}
-            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
-          >
-            <Share2 className="w-3.5 h-3.5 text-slate-600" />
-            <span>Share</span>
-          </button>
-
-          <button
-            onClick={() => onNavigate('create')}
-            className="px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>New Trip</span>
-          </button>
+          </div>
         </div>
       </div>
 

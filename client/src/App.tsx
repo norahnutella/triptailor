@@ -206,6 +206,9 @@ export function App() {
     logoutUser();
     setUser(null);
     setSavedItineraries([]);
+    setCurrentScreen('dashboard');
+    setIsChatDrawerOpen(false);
+    setProfileModalOpen(false);
     showToast('Signed out of TripTailor.');
   };
 
