@@ -76,7 +76,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           }`}
                         >
                           <Luggage className="w-4 h-4 shrink-0" />
-                          <span>Itineraries</span>
+                          <span>Itinerary</span>
                         </button>
 
                         {onOpenChat && (

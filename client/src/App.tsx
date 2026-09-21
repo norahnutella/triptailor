@@ -5,7 +5,7 @@ import {
   getActiveUser, updateUserProfile, logoutUser, getNotifications, restoreSession,
   markNotificationsAsRead, clearAllNotifications,
 } from './data/authStore';
-import { getUnreadGroupMessagesCount } from './data/groupChatStore';
+import { updateTrip } from './data/api';
 import { getSavedItineraries, saveItinerary, deleteItinerary } from './data/itineraryStore';
 import { Sidebar } from './components/Sidebar';
 import { TopNav } from './components/TopNav';
@@ -18,7 +18,6 @@ import { AuthModal } from './components/AuthModal';
 import { ProfileModal } from './components/ProfileModal';
 import { SquadChatDrawer } from './components/SquadChatDrawer';
 import { PrintableItineraryModal } from './components/PrintableItineraryModal';
-import { SavedItinerariesView } from './components/SavedItinerariesView';
 import { InviteFriendsModal, ReserveTableModal, DetailedBillModal, AddActivityModal } from './components/Modals';
 
 type ActiveModal =
@@ -42,7 +41,7 @@ export function App() {
   const [savedItineraries, setSavedItineraries] = useState<SavedItinerary[]>([]);
   const [isChatDrawerOpen, setIsChatDrawerOpen] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
-  const [unreadChatCount, setUnreadChatCount] = useState<number>(() => user ? getUnreadGroupMessagesCount(user.id) : 0);
+  const [unreadChatCount] = useState<number>(0);
   const [modalState, setModalState] = useState<ActiveModal>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -57,11 +56,6 @@ export function App() {
     });
   }, []);
 
-  useEffect(() => {
-    const handleMessageEvent = () => setUnreadChatCount(user ? getUnreadGroupMessagesCount(user.id) : 0);
-    window.addEventListener('triptailor_group_message', handleMessageEvent);
-    return () => window.removeEventListener('triptailor_group_message', handleMessageEvent);
-  }, [user?.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -81,7 +75,7 @@ export function App() {
     return () => { cancelled = true; };
   }, [user?.id, currentTrip.id]);
 
-  const handleCreateItinerary = (tripData: { destination: string; dates: string; activities: ActivityItem[]; travelers: number; title: string; daysCount?: number }) => {
+  const handleCreateItinerary = (tripData: { destination: string; dates: string; activities: ActivityItem[]; travelers: number; title: string; daysCount?: number; tripId: string; members: import('./types').TripMember[] }) => {
     if (!user) {
       setAuthModal({ isOpen: true, mode: 'login' });
       showToast('Please log in or sign up before generating an itinerary.');
@@ -102,14 +96,15 @@ export function App() {
       days.push({ dayNumber: i, dateStr: `Day ${i} • ${title}`, title, activities: dayActs.length > 0 ? dayActs : tripData.activities.slice(0, 2) });
     }
     const newTrip: TripData = {
-      id: `trip-${Date.now()}`, title: tripData.title, destination: tripData.destination, dates: tripData.dates,
+      id: tripData.tripId, title: tripData.title, destination: tripData.destination, dates: tripData.dates,
       daysCount, travelersCount: tripData.travelers, budgetTotal: tripData.travelers * (daysCount * 1150),
-      budgetPerPerson: daysCount * 1150, budgetTier: 'Moderate', tags: [destShort.toUpperCase(), `${daysCount} DAYS`], days,
+      budgetPerPerson: daysCount * 1150, budgetTier: 'Moderate', tags: [destShort.toUpperCase(), `${daysCount} DAYS`, 'CALENDAR CURATED'], days, members: tripData.members,
     };
     setCurrentTrip(newTrip);
     setActivities(days[0]?.activities || []);
     setIsCurrentTripSaved(false);
-    setCurrentScreen('trip');
+    setCurrentScreen('itinerary');
+    updateTrip(tripData.tripId, newTrip).catch(() => showToast('Trip workspace sync failed. Please save the itinerary again.'));
     showToast(`Itinerary generated for ${tripData.destination} (${daysCount} days)!`);
   };
 
@@ -146,6 +141,7 @@ export function App() {
       return;
     }
     try {
+      await updateTrip(currentTrip.id, currentTrip);
       await saveItinerary(user.id, currentTrip);
       setSavedItineraries(await getSavedItineraries(user.id));
       setIsCurrentTripSaved(true);
@@ -203,7 +199,6 @@ export function App() {
   const handleAuthSuccess = (authenticatedUser: UserProfile, message: string) => {
     setUser(authenticatedUser);
     getSavedItineraries(authenticatedUser.id).then(setSavedItineraries).catch(() => setSavedItineraries([]));
-    setUnreadChatCount(getUnreadGroupMessagesCount(authenticatedUser.id));
     showToast(message);
   };
 
@@ -212,7 +207,8 @@ export function App() {
     setUser(null);
     setSavedItineraries([]);
     setCurrentScreen('dashboard');
-    setUnreadChatCount(0);
+    setIsChatDrawerOpen(false);
+    setProfileModalOpen(false);
     showToast('Signed out of TripTailor.');
   };
 
@@ -241,14 +237,13 @@ export function App() {
           <main className="flex-1 p-4 sm:p-6 lg:p-8">
             {currentScreen === 'dashboard' && <DashboardView onNavigate={handleNavigate} user={user} onOpenAuth={(mode) => setAuthModal({ isOpen: true, mode })} />}
             {currentScreen === 'create' && <TripCustomizerView onNavigate={handleNavigate} onOpenInvite={handleOpenInvite} onCreateItinerary={handleCreateItinerary} initialDestination={selectedDestination} />}
-            {currentScreen === 'itinerary' && user && <SavedItinerariesView itineraries={savedItineraries} onNavigate={handleNavigate} onView={handleViewSavedItinerary} onDelete={handleDeleteSavedItinerary} />}
-            {currentScreen === 'trip' && <ItineraryView onNavigate={handleNavigate} onOpenInvite={handleOpenInvite} onOpenReserve={(restaurant) => setModalState({ type: 'reserve', restaurant })} onOpenBill={() => setModalState({ type: 'bill' })} onOpenAddActivity={(dayNumber) => setModalState({ type: 'addActivity', dayNumber })} onOpenPrint={user ? () => setIsPrintModalOpen(true) : undefined} onOpenChat={user ? () => setIsChatDrawerOpen(true) : undefined} unreadChatCount={unreadChatCount} onRemoveActivity={handleRemoveActivity} currentTrip={currentTrip} user={user} onRegenerate={handleRegenerateItinerary} onUpdateTrip={handleUpdateTrip} onSave={handleSaveTrip} isSaved={isCurrentTripSaved} />}
+            {currentScreen === 'itinerary' && <ItineraryView onNavigate={handleNavigate} onOpenInvite={handleOpenInvite} onOpenReserve={(restaurant) => setModalState({ type: 'reserve', restaurant })} onOpenBill={() => setModalState({ type: 'bill' })} onOpenAddActivity={(dayNumber) => setModalState({ type: 'addActivity', dayNumber })} onOpenPrint={user ? () => setIsPrintModalOpen(true) : undefined} onOpenChat={user ? () => setIsChatDrawerOpen(true) : undefined} unreadChatCount={unreadChatCount} onRemoveActivity={handleRemoveActivity} currentTrip={currentTrip} user={user} onRegenerate={handleRegenerateItinerary} onUpdateTrip={handleUpdateTrip} onSave={handleSaveTrip} isSaved={isCurrentTripSaved} />}
             {currentScreen === 'profile' && <ProfileView onNavigate={handleNavigate} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} onOpenAuth={(mode) => setAuthModal({ isOpen: true, mode })} showToast={showToast} savedItineraries={savedItineraries} onViewSavedItinerary={handleViewSavedItinerary} onDeleteSavedItinerary={handleDeleteSavedItinerary} />}
             {currentScreen === 'contact' && <ContactView onNavigate={handleNavigate} user={user} />}
           </main>
         </div>
       </div>
-      <SquadChatDrawer isOpen={isChatDrawerOpen} onClose={() => { setIsChatDrawerOpen(false); setUnreadChatCount(user ? getUnreadGroupMessagesCount(user.id) : 0); }} user={user} />
+      <SquadChatDrawer isOpen={isChatDrawerOpen} onClose={() => setIsChatDrawerOpen(false)} user={user} />
       <PrintableItineraryModal isOpen={isPrintModalOpen} onClose={() => setIsPrintModalOpen(false)} trip={currentTrip} user={user} />
       <AuthModal isOpen={authModal.isOpen} onClose={() => setAuthModal({ ...authModal, isOpen: false })} initialMode={authModal.mode} onSuccess={handleAuthSuccess} />
       {user && <ProfileModal isOpen={profileModalOpen} onClose={() => setProfileModalOpen(false)} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} />}
