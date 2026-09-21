@@ -5,7 +5,7 @@ import {
   getActiveUser, updateUserProfile, logoutUser, getNotifications, restoreSession,
   markNotificationsAsRead, clearAllNotifications,
 } from './data/authStore';
-import { updateTrip } from './data/api';
+import { getUnreadGroupMessagesCount } from './data/groupChatStore';
 import { getSavedItineraries, saveItinerary, deleteItinerary } from './data/itineraryStore';
 import { Sidebar } from './components/Sidebar';
 import { TopNav } from './components/TopNav';
@@ -41,7 +41,7 @@ export function App() {
   const [savedItineraries, setSavedItineraries] = useState<SavedItinerary[]>([]);
   const [isChatDrawerOpen, setIsChatDrawerOpen] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
-  const [unreadChatCount] = useState<number>(0);
+  const [unreadChatCount, setUnreadChatCount] = useState<number>(() => user ? getUnreadGroupMessagesCount(user.id) : 0);
   const [modalState, setModalState] = useState<ActiveModal>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -56,6 +56,11 @@ export function App() {
     });
   }, []);
 
+  useEffect(() => {
+    const handleMessageEvent = () => setUnreadChatCount(user ? getUnreadGroupMessagesCount(user.id) : 0);
+    window.addEventListener('triptailor_group_message', handleMessageEvent);
+    return () => window.removeEventListener('triptailor_group_message', handleMessageEvent);
+  }, [user?.id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,7 +80,7 @@ export function App() {
     return () => { cancelled = true; };
   }, [user?.id, currentTrip.id]);
 
-  const handleCreateItinerary = (tripData: { destination: string; dates: string; activities: ActivityItem[]; travelers: number; title: string; daysCount?: number; tripId: string; members: import('./types').TripMember[] }) => {
+  const handleCreateItinerary = (tripData: { destination: string; dates: string; activities: ActivityItem[]; travelers: number; title: string; daysCount?: number }) => {
     if (!user) {
       setAuthModal({ isOpen: true, mode: 'login' });
       showToast('Please log in or sign up before generating an itinerary.');
@@ -96,15 +101,14 @@ export function App() {
       days.push({ dayNumber: i, dateStr: `Day ${i} • ${title}`, title, activities: dayActs.length > 0 ? dayActs : tripData.activities.slice(0, 2) });
     }
     const newTrip: TripData = {
-      id: tripData.tripId, title: tripData.title, destination: tripData.destination, dates: tripData.dates,
+      id: `trip-${Date.now()}`, title: tripData.title, destination: tripData.destination, dates: tripData.dates,
       daysCount, travelersCount: tripData.travelers, budgetTotal: tripData.travelers * (daysCount * 1150),
-      budgetPerPerson: daysCount * 1150, budgetTier: 'Moderate', tags: [destShort.toUpperCase(), `${daysCount} DAYS`, 'CALENDAR CURATED'], days, members: tripData.members,
+      budgetPerPerson: daysCount * 1150, budgetTier: 'Moderate', tags: [destShort.toUpperCase(), `${daysCount} DAYS`, 'CALENDAR CURATED'], days,
     };
     setCurrentTrip(newTrip);
     setActivities(days[0]?.activities || []);
     setIsCurrentTripSaved(false);
     setCurrentScreen('itinerary');
-    updateTrip(tripData.tripId, newTrip).catch(() => showToast('Trip workspace sync failed. Please save the itinerary again.'));
     showToast(`Itinerary generated for ${tripData.destination} (${daysCount} days)!`);
   };
 
@@ -141,7 +145,6 @@ export function App() {
       return;
     }
     try {
-      await updateTrip(currentTrip.id, currentTrip);
       await saveItinerary(user.id, currentTrip);
       setSavedItineraries(await getSavedItineraries(user.id));
       setIsCurrentTripSaved(true);
@@ -199,6 +202,7 @@ export function App() {
   const handleAuthSuccess = (authenticatedUser: UserProfile, message: string) => {
     setUser(authenticatedUser);
     getSavedItineraries(authenticatedUser.id).then(setSavedItineraries).catch(() => setSavedItineraries([]));
+    setUnreadChatCount(getUnreadGroupMessagesCount(authenticatedUser.id));
     showToast(message);
   };
 
@@ -206,9 +210,8 @@ export function App() {
     logoutUser();
     setUser(null);
     setSavedItineraries([]);
+    setUnreadChatCount(0);
     setCurrentScreen('dashboard');
-    setIsChatDrawerOpen(false);
-    setProfileModalOpen(false);
     showToast('Signed out of TripTailor.');
   };
 
@@ -243,7 +246,7 @@ export function App() {
           </main>
         </div>
       </div>
-      <SquadChatDrawer isOpen={isChatDrawerOpen} onClose={() => setIsChatDrawerOpen(false)} user={user} />
+      <SquadChatDrawer isOpen={isChatDrawerOpen} onClose={() => { setIsChatDrawerOpen(false); setUnreadChatCount(user ? getUnreadGroupMessagesCount(user.id) : 0); }} user={user} />
       <PrintableItineraryModal isOpen={isPrintModalOpen} onClose={() => setIsPrintModalOpen(false)} trip={currentTrip} user={user} />
       <AuthModal isOpen={authModal.isOpen} onClose={() => setAuthModal({ ...authModal, isOpen: false })} initialMode={authModal.mode} onSuccess={handleAuthSuccess} />
       {user && <ProfileModal isOpen={profileModalOpen} onClose={() => setProfileModalOpen(false)} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} />}
