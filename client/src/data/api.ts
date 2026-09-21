@@ -26,3 +26,31 @@ export async function getTrip(tripId: string): Promise<TripData> { const res = a
 export async function getTrips(): Promise<TripSummary[]> { const res = await apiRequest<{ trips: TripSummary[] }>('/trips'); return res.trips; }
 export async function getTripMessages(tripId: string): Promise<TripChatMessage[]> { const res = await apiRequest<{ messages: TripChatMessage[] }>(`/trips/${encodeURIComponent(tripId)}/messages`); return res.messages; }
 export async function sendTripMessage(tripId: string, text: string): Promise<TripChatMessage> { const res = await apiRequest<{ message: TripChatMessage }>(`/trips/${encodeURIComponent(tripId)}/messages`, { method: 'POST', body: JSON.stringify({ text }) }); return res.message; }
+
+export async function deleteTrip(tripId: string): Promise<void> {
+  await apiRequest(`/trips/${encodeURIComponent(tripId)}`, { method: 'DELETE' });
+}
+
+export async function sendTripFile(tripId: string, attachment: { name: string; type: string; size: number; dataUrl: string }): Promise<TripChatMessage> {
+  const res = await apiRequest<{ message: TripChatMessage }>(`/trips/${encodeURIComponent(tripId)}/messages`, {
+    method: 'POST',
+    body: JSON.stringify({ kind: 'file', attachment }),
+  });
+  return res.message;
+}
+
+export async function createTripPoll(tripId: string, question: string, options: string[]): Promise<TripChatMessage> {
+  const res = await apiRequest<{ message: TripChatMessage }>(`/trips/${encodeURIComponent(tripId)}/messages`, {
+    method: 'POST',
+    body: JSON.stringify({ kind: 'poll', poll: { question, options } }),
+  });
+  return res.message;
+}
+
+export async function voteTripPoll(tripId: string, messageId: string, optionIndex: number): Promise<TripChatMessage> {
+  const res = await apiRequest<{ message: TripChatMessage }>(`/trips/${encodeURIComponent(tripId)}/messages/${encodeURIComponent(messageId)}/vote`, {
+    method: 'POST',
+    body: JSON.stringify({ optionIndex }),
+  });
+  return res.message;
+}

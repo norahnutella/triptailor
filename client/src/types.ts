@@ -103,7 +103,33 @@ export interface TripData {
  */
 export interface TripSummary { id: string; title: string; destination?: string; members: TripMember[]; owner: TripMember; updatedAt?: string; }
 
-export interface TripChatMessage { id: string; text: string; createdAt: string; sender: TripMember; }
+export interface TripChatAttachment {
+  name: string;
+  type: string;
+  size: number;
+  dataUrl: string;
+}
+
+export interface TripPollOption {
+  text: string;
+  votes: number;
+}
+
+export interface TripChatPoll {
+  question: string;
+  options: TripPollOption[];
+  votedOptionIndex?: number | null;
+}
+
+export interface TripChatMessage {
+  id: string;
+  text?: string;
+  createdAt: string;
+  sender: TripMember;
+  kind: 'text' | 'file' | 'poll';
+  attachment?: TripChatAttachment;
+  poll?: TripChatPoll;
+}
 
 export interface SavedItinerary extends TripData {
   userId: string;
