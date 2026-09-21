@@ -6,9 +6,7 @@
  */
 
 // Active view in the application
-export type ViewScreen = 'dashboard' | 'create' | 'itinerary' | 'profile' | 'contact';
-
-export interface TripMember { id: string; name: string; email: string; avatar: string; role?: string; }
+export type ViewScreen = 'dashboard' | 'create' | 'itinerary' | 'trip' | 'profile' | 'contact';
 
 // A single planned activity or waypoint in an itinerary
 export interface ActivityItem {
@@ -81,7 +79,6 @@ export interface GroupMessage {
 // Overall trip specification
 export interface TripData {
   id: string;
-  members?: TripMember[];
   title: string;
   destination: string;
   dates: string;
@@ -101,36 +98,6 @@ export interface TripData {
  * preserved when a trip is saved. The timestamps allow the UI
  * to distinguish the original save from later updates.
  */
-export interface TripSummary { id: string; title: string; destination?: string; members: TripMember[]; owner: TripMember; updatedAt?: string; }
-
-export interface TripChatAttachment {
-  name: string;
-  type: string;
-  size: number;
-  dataUrl: string;
-}
-
-export interface TripPollOption {
-  text: string;
-  votes: number;
-}
-
-export interface TripChatPoll {
-  question: string;
-  options: TripPollOption[];
-  votedOptionIndex?: number | null;
-}
-
-export interface TripChatMessage {
-  id: string;
-  text?: string;
-  createdAt: string;
-  sender: TripMember;
-  kind: 'text' | 'file' | 'poll';
-  attachment?: TripChatAttachment;
-  poll?: TripChatPoll;
-}
-
 export interface SavedItinerary extends TripData {
   userId: string;
   savedAt: string;
