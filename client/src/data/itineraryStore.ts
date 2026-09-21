@@ -8,6 +8,12 @@ export async function getSavedItineraries(_userId: string): Promise<SavedItinera
   return res.itineraries;
 }
 
+
+export async function getSavedItinerary(_userId: string, tripId: string): Promise<SavedItinerary> {
+  const res = await apiRequest<{ itinerary: SavedItinerary }>(`/itineraries/${encodeURIComponent(tripId)}`);
+  return res.itinerary;
+}
+
 export async function saveItinerary(_userId: string, trip: TripData): Promise<SavedItinerary> {
   const res = await apiRequest<{ itinerary: SavedItinerary }>('/itineraries', {
     method: 'POST', body: JSON.stringify({ trip }),

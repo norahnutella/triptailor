@@ -24,31 +24,50 @@ import {
   Compass,
 } from 'lucide-react';
 import { ActivityItem, UserProfile } from '../types';
+import { getTrip, inviteTripMember, TripMember } from '../data/tripStore';
 
 interface InviteModalProps {
   isOpen: boolean;
   onClose: () => void;
   user?: UserProfile | null;
+  tripId?: string;
 }
 
-export const InviteFriendsModal: React.FC<InviteModalProps> = ({ isOpen, onClose, user }) => {
+export const InviteFriendsModal: React.FC<InviteModalProps> = ({ isOpen, onClose, user, tripId }) => {
   const [copied, setCopied] = useState(false);
   const [email, setEmail] = useState('');
-  const [invitedEmails, setInvitedEmails] = useState<string[]>(['megha.roy@example.com', 'anu.sharma@example.com', 'sarah.k@example.com']);
+  const [members, setMembers] = useState<TripMember[]>([]);
+  const [message, setMessage] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+
+  React.useEffect(() => {
+    if (!isOpen || !tripId) return;
+    getTrip(tripId).then((trip) => setMembers(trip.members || [])).catch(() => setMembers([]));
+  }, [isOpen, tripId]);
 
   if (!isOpen) return null;
 
   const handleCopy = () => {
-    navigator.clipboard?.writeText('https://triptailor.app/pod/goa-oct2025-pod78');
+    const link = `${window.location.origin}/?trip=${encodeURIComponent(tripId || '')}`;
+    navigator.clipboard?.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleAdd = (e: React.FormEvent) => {
+  const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim()) {
-      setInvitedEmails([...invitedEmails, email.trim()]);
+    if (!email.trim() || !tripId) return;
+    setSending(true);
+    setMessage(null);
+    try {
+      const trip = await inviteTripMember(tripId, email);
+      setMembers(trip.members || []);
       setEmail('');
+      setMessage('Member added to this trip.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Unable to add this member.');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -57,88 +76,45 @@ export const InviteFriendsModal: React.FC<InviteModalProps> = ({ isOpen, onClose
       <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
-              <Users className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900 text-lg">Invite Travel Companions</h3>
-              <p className="text-xs text-slate-500">Co-plan, vote on activities & split expenses</p>
-            </div>
+            <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center"><Users className="w-5 h-5" /></div>
+            <div><h3 className="font-bold text-slate-900 text-lg">Invite Travel Companions</h3><p className="text-xs text-slate-500">Members are stored with this trip.</p></div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100">
-            <X className="w-5 h-5" />
-          </button>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="py-4 space-y-4">
           <div>
-            <label className="text-xs font-semibold text-slate-700 block mb-1.5 uppercase tracking-wider">
-              Shareable Pod Link
-            </label>
+            <label className="text-xs font-semibold text-slate-700 block mb-1.5 uppercase tracking-wider">Trip Share Link</label>
             <div className="flex items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-xl">
-              <input
-                readOnly
-                value="https://triptailor.app/pod/goa-oct2025-pod78"
-                className="bg-transparent text-xs text-slate-700 w-full outline-hidden font-mono"
-              />
-              <button
-                onClick={handleCopy}
-                className="px-3 py-1.5 bg-white border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-100 flex items-center gap-1 shrink-0 shadow-xs"
-              >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                {copied ? 'Copied' : 'Copy'}
-              </button>
+              <input readOnly value={`${window.location.origin}/?trip=${tripId || ''}`} className="bg-transparent text-xs text-slate-700 w-full outline-hidden font-mono" />
+              <button onClick={handleCopy} className="px-3 py-1.5 bg-white border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-100 flex items-center gap-1 shrink-0">{copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}{copied ? 'Copied' : 'Copy'}</button>
             </div>
           </div>
 
           <form onSubmit={handleAdd}>
-            <label className="text-xs font-semibold text-slate-700 block mb-1.5 uppercase tracking-wider">
-              Invite by Email
-            </label>
+            <label className="text-xs font-semibold text-slate-700 block mb-1.5 uppercase tracking-wider">Add Existing TripTailor User</label>
             <div className="flex gap-2">
-              <input
-                type="email"
-                placeholder="friend@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-hidden focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
-              />
-              <button
-                type="submit"
-                className="px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-semibold text-sm rounded-xl transition-colors"
-              >
-                Send
-              </button>
+              <input type="email" required placeholder="friend@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className="flex-1 px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-hidden focus:border-orange-500 focus:ring-1 focus:ring-orange-500" />
+              <button type="submit" disabled={sending} className="px-4 py-2.5 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white font-semibold text-sm rounded-xl flex items-center gap-1.5"><Send className="w-3.5 h-3.5" />{sending ? 'Adding' : 'Add'}</button>
             </div>
+            {message && <p className="text-[11px] mt-2 text-slate-600">{message}</p>}
           </form>
 
           <div>
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2">
-              Active Squad Members ({invitedEmails.length + 1})
-            </span>
-            <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
-              <div className="flex items-center justify-between text-xs py-1.5 px-2 bg-teal-50/70 border border-teal-100 rounded-lg">
-                <span className="font-medium text-slate-800">{user ? `${user.name} (You)` : 'You'}</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-teal-600 text-white px-2 py-0.5 rounded-full">Trip Lead</span>
-              </div>
-              {invitedEmails.map((em, idx) => (
-                <div key={idx} className="flex items-center justify-between text-xs py-1.5 px-2 bg-slate-50 border border-slate-100 rounded-lg">
-                  <span className="text-slate-700 font-medium truncate max-w-[200px]">{em}</span>
-                  <span className="text-[10px] text-slate-500">Collaborator</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2">Trip Members ({members.length})</span>
+            <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
+              {members.map((member) => (
+                <div key={member.id} className="flex items-center gap-2.5 text-xs py-2 px-2.5 bg-slate-50 border border-slate-100 rounded-lg">
+                  <img src={member.avatar} alt={member.name} className="w-7 h-7 rounded-full object-cover" />
+                  <div className="min-w-0 flex-1"><div className="font-semibold text-slate-800 truncate">{member.name}{member.id === user?.id ? ' (You)' : ''}</div><div className="text-[10px] text-slate-400 truncate">{member.email}</div></div>
+                  <span className="text-[10px] font-bold uppercase text-slate-500">{member.membershipRole === 'owner' ? 'Owner' : 'Member'}</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        <div className="pt-3 border-t border-slate-100 flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-xl"
-          >
-            Done
-          </button>
-        </div>
+        <div className="pt-3 border-t border-slate-100 flex justify-end"><button onClick={onClose} className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-xl">Done</button></div>
       </div>
     </div>
   );

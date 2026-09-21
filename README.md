@@ -1,71 +1,28 @@
-# TripTailor — Ready-to-Run MERN Project
+# TripTailor persistent trip backend update
 
-This folder is a cleaned runnable version of TripTailor with the existing React UI, MongoDB-backed authentication, JWT sessions, bcrypt password hashing, and MongoDB-backed saved itineraries.
+Replace the matching files in `server/` with the files in this folder.
 
-## Requirements
-- Node.js 18+ (Node 20+ recommended)
-- MongoDB running locally, or a MongoDB Atlas connection string
+## What this adds
+- Persistent Trip document with `title`, `owner`, `members`, itinerary data and trip metadata.
+- One saved itinerary associated with each Trip.
+- Exact saved itinerary retrieval through `GET /api/itineraries/:tripId`.
+- Saved itinerary list includes trips owned by the user or shared with the user.
+- Optional invitations by email for existing TripTailor accounts.
+- Persistent per-trip chat stored in MongoDB.
+- Members can read/send messages only for trips they belong to.
+- Only the trip owner can delete a trip.
 
-## 1. Install everything
-From the **TripTailor root folder**:
+## Server change
+In `server/server.js` add:
 
-```bash
-npm install
-npm run setup
+```js
+import tripRoutes from './routes/tripRoutes.js';
+app.use('/api/trips', tripRoutes);
 ```
 
-## 2. Configure MongoDB
-The included `server/.env` is ready for a local MongoDB server:
+No new npm package is required.
 
-```text
-MONGODB_URI=mongodb://127.0.0.1:27017/triptailor
-```
+## Important
+This version intentionally keeps the existing `tripId` string used by the current frontend so existing saved-itinerary data can be migrated more easily.
 
-If you use MongoDB Atlas, replace that value with your `mongodb+srv://...` connection string.
-
-Change `JWT_SECRET` before deploying publicly.
-
-## 3. Start the complete application
-From the root:
-
-```bash
-npm run dev
-```
-
-Frontend: http://localhost:5173
-Backend: http://localhost:5000
-Health check: http://localhost:5000/api/health
-
-If you prefer two terminals:
-
-```bash
-npm run client
-npm run server
-```
-
-## What is connected to MongoDB
-- Register → MongoDB `users` collection
-- Login → MongoDB user lookup + bcrypt password verification
-- Session → JWT
-- Profile updates → MongoDB
-- Save itinerary → MongoDB `itineraries` and `trips`
-- Previous itineraries → MongoDB
-- Delete itinerary → MongoDB, protected by the logged-in user's JWT
-
-No demo login account is included in the authentication flow.
-
-## Important note about AI
-The current supplied TripTailor UI generates itinerary suggestions locally. No AI provider key was available, so this package does not pretend that a live external AI service is connected. MongoDB authentication and saved itineraries are the real backend flows.
-
-## Verification
-The package includes a backend smoke test:
-
-```bash
-npm test --prefix server
-```
-
-The frontend can be production-built with:
-
-```bash
-npm run build --prefix client
-```
+Invitations currently work with existing registered TripTailor accounts by email. Email delivery to unregistered addresses is not included in this backend update.

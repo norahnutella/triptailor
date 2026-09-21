@@ -1,0 +1,8 @@
+Add this import to server/server.js:
+import tripRoutes from './routes/tripRoutes.js';
+
+Then add this route with the other API routes:
+app.use('/api/trips', tripRoutes);
+
+The existing itinerary route remains:
+app.use('/api/itineraries', itineraryRoutes);
