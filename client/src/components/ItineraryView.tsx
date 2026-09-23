@@ -34,6 +34,7 @@ interface ItineraryViewProps {
   onOpenReserve: (restaurant: string) => void;
   onOpenBill: () => void;
   onOpenAddActivity: (dayNum: number) => void;
+  onOpenEditActivity?: (activity: ActivityItem, dayNum: number) => void;
   onOpenPrint?: () => void;
   onOpenChat?: () => void;
   unreadChatCount?: number;
@@ -48,7 +49,7 @@ interface ItineraryViewProps {
   onUpdateTrip?: (
     updates: Pick<TripData, 'title' | 'dates'>
   ) => void;
-  onSave?: () => void;
+  onSave?: () => void | Promise<void>;
   isSaved?: boolean;
 }
 
@@ -57,6 +58,7 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
   onOpenInvite,
   onOpenReserve,
   onOpenAddActivity,
+  onOpenEditActivity,
   onOpenPrint,
   onOpenChat,
   unreadChatCount = 0,
@@ -70,6 +72,7 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
 }) => {
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
   const [editedDates, setEditedDates] = useState('');
@@ -94,7 +97,7 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
     return () => {
       active = false;
     };
-  }, [user?.currency]);
+  }, []);
 
   const daysData = currentTrip?.days?.length ? currentTrip.days : INITIAL_DAYS;
   const currentDay = daysData[selectedDayIndex] || daysData[0] || {
@@ -148,6 +151,16 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
     });
 
     setIsEditing(false);
+  };
+
+  const handleSaveTrip = async () => {
+    if (!onSave || isSaving || isSaved) return;
+    setIsSaving(true);
+    try {
+      await onSave();
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (!currentTrip?.id) {
@@ -294,12 +307,12 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
 
           {user && onSave && (
             <button
-              onClick={onSave}
-              disabled={isSaved}
+              onClick={handleSaveTrip}
+              disabled={isSaved || isSaving}
               className="px-3 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-100 disabled:text-orange-800 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:cursor-default flex items-center gap-1.5"
             >
               <Save className="w-3.5 h-3.5" />
-              <span>{isSaved ? 'Saved' : 'Save trip'}</span>
+              <span>{isSaved ? 'Saved' : isSaving ? 'Saving...' : 'Save trip'}</span>
             </button>
           )}
 
@@ -331,13 +344,6 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
             </button>
           )}
 
-          <button
-            onClick={() => onNavigate('create')}
-            className="px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>New Trip</span>
-          </button>
         </div>
       </div>
 
@@ -434,6 +440,17 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          onOpenEditActivity?.(activity, selectedDayIndex + 1);
+                        }}
+                        className="p-1 text-slate-400 hover:text-orange-600 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+                        title="Edit activity"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
                           handleRemove(activity.id);
                         }}
                         className="p-1 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
@@ -452,9 +469,9 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
                         <span className="font-semibold text-slate-700">
                           {convertCostText(
                             activity.costInfo,
-                            user?.currency || 'INR',
+                            currentTrip?.currency || 'INR',
                             currencyRates
-                          )}
+                          )} {/\d/.test(activity.costInfo) && !/for group|group cost|per group/i.test(activity.costInfo) && '/ person'}
                         </span>
 
                         <span>•</span>
@@ -512,7 +529,7 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
                   <span className="text-base font-bold text-slate-900">
                     {formatCurrency(
                       currentTrip.budgetTotal || 0,
-                      user?.currency || 'INR',
+                      currentTrip?.currency || 'INR',
                       currencyRates
                     )}
                   </span>
@@ -526,7 +543,7 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
                   <span className="text-base font-bold text-slate-900">
                     {formatCurrency(
                       currentTrip.budgetPerPerson || 0,
-                      user?.currency || 'INR',
+                      currentTrip?.currency || 'INR',
                       currencyRates
                     )}
                   </span>

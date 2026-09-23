@@ -11,7 +11,6 @@ import {
   Calendar,
   LogOut,
   Save,
-  DollarSign,
   Clock,
   Sparkles,
   Shield,
@@ -40,7 +39,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [role, setRole] = useState(user.role);
   const [bio, setBio] = useState(user.bio || '');
   const [avatar, setAvatar] = useState(user.avatar);
-  const [currency, setCurrency] = useState(user.currency || '₹ INR');
   const [travelPace, setTravelPace] = useState<'Relaxed' | 'Balanced' | 'Packed'>(
     user.travelPace || 'Balanced'
   );
@@ -55,7 +53,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       role: role.trim(),
       bio: bio.trim(),
       avatar,
-      currency,
       travelPace,
     });
     setSavedSuccess(true);
@@ -140,11 +137,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   key={idx}
                   type="button"
                   onClick={() => setAvatar(p.url)}
-                  className={`p-1 rounded-2xl transition-all border cursor-pointer ${
-                    avatar === p.url
+                  className={`p-1 rounded-2xl transition-all border cursor-pointer ${avatar === p.url
                       ? 'border-orange-500 bg-orange-50 ring-2 ring-orange-500/20'
                       : 'border-slate-200 hover:border-slate-300'
-                  }`}
+                    }`}
                   title={p.label}
                 >
                   <img
@@ -201,25 +197,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             />
           </div>
 
-          {/* Travel Preferences: Currency & Pace */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Preferred Currency
-              </label>
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-hidden focus:bg-white focus:border-slate-900 font-medium"
-              >
-                <option value="₹ INR">₹ INR (Indian Rupee)</option>
-                <option value="$ USD">$ USD (US Dollar)</option>
-                <option value="€ EUR">€ EUR (Euro)</option>
-                <option value="£ GBP">£ GBP (British Pound)</option>
-                <option value="¥ JPY">¥ JPY (Japanese Yen)</option>
-              </select>
-            </div>
-
+          {/* Travel Preference: Pace */}
+          <div>
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
                 Travel Pace
@@ -230,11 +209,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     key={pace}
                     type="button"
                     onClick={() => setTravelPace(pace)}
-                    className={`py-2 rounded-xl font-bold transition-all border text-center cursor-pointer ${
-                      travelPace === pace
+                    className={`py-2 rounded-xl font-bold transition-all border text-center cursor-pointer ${travelPace === pace
                         ? 'bg-slate-900 text-white border-slate-900'
                         : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-                    }`}
+                      }`}
                   >
                     {pace}
                   </button>
@@ -276,11 +254,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     setAvatar(demo.avatar);
                     setBio(demo.bio || '');
                   }}
-                  className={`p-2 rounded-xl border text-left flex items-center gap-2 transition-all cursor-pointer ${
-                    user.id === demo.id
+                  className={`p-2 rounded-xl border text-left flex items-center gap-2 transition-all cursor-pointer ${user.id === demo.id
                       ? 'border-orange-500 bg-orange-50/50'
                       : 'border-slate-200 hover:bg-slate-50'
-                  }`}
+                    }`}
                 >
                   <img
                     src={demo.avatar}

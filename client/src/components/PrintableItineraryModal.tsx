@@ -14,6 +14,7 @@ import {
   Compass,
 } from 'lucide-react';
 import { TripData, UserProfile } from '../types';
+import { formatCurrency } from '../data/currency';
 
 interface PrintableItineraryModalProps {
   isOpen: boolean;
@@ -258,7 +259,7 @@ export const PrintableItineraryModal: React.FC<PrintableItineraryModalProps> = (
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                     <span className="text-slate-400 block text-[10px] uppercase font-bold">Total Group Budget</span>
                     <span className="text-lg font-bold text-slate-900">
-                      ₹{trip.budgetTotal ? trip.budgetTotal.toLocaleString() : '20,000'}
+                      {formatCurrency(trip.budgetTotal || 20000, trip.currency || 'INR')}
                     </span>
                     <span className="text-[10px] text-slate-500 block mt-0.5">Covering activities, food & transit</span>
                   </div>
@@ -266,7 +267,7 @@ export const PrintableItineraryModal: React.FC<PrintableItineraryModalProps> = (
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                     <span className="text-slate-400 block text-[10px] uppercase font-bold">Per Person Allocation</span>
                     <span className="text-lg font-bold text-slate-900">
-                      ₹{trip.budgetPerPerson ? trip.budgetPerPerson.toLocaleString() : '5,000'}
+                      {formatCurrency(trip.budgetPerPerson || 5000, trip.currency || 'INR')}
                     </span>
                     <span className="text-[10px] text-slate-500 block mt-0.5">Based on {trip.travelersCount} travelers</span>
                   </div>

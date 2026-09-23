@@ -57,8 +57,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={() => onNavigate('dashboard')}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${currentScreen === 'dashboard'
-                ? 'bg-orange-50 text-orange-900'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              ? 'bg-orange-50 text-orange-900'
+              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
               }`}
           >
             <LayoutDashboard className="w-4 h-4 shrink-0" />
@@ -72,8 +72,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={() => onNavigate('itinerary')}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${currentScreen === 'itinerary'
-                    ? 'bg-orange-50 text-orange-900'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  ? 'bg-orange-50 text-orange-900'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                   }`}
               >
                 <Luggage className="w-4 h-4 shrink-0" />
@@ -103,27 +103,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={() => onNavigate('profile')}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${currentScreen === 'profile'
-                    ? 'bg-orange-50 text-orange-900'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  ? 'bg-orange-50 text-orange-900'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                   }`}
               >
                 <User className="w-4 h-4 shrink-0" />
                 <span>Profile</span>
               </button>
 
-              {/* New Trip */}
-              <div className="pt-2">
-                <button
-                  onClick={() => onNavigate('create')}
-                  className={`w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-lg text-sm font-bold transition-all cursor-pointer ${currentScreen === 'create'
-                      ? 'bg-orange-600 text-white'
-                      : 'bg-orange-50 text-orange-700 hover:bg-orange-100'
-                    }`}
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>New Trip</span>
-                </button>
-              </div>
             </>
           )}
 
@@ -131,8 +118,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={() => onNavigate('contact')}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${currentScreen === 'contact'
-                ? 'bg-orange-50 text-orange-900'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              ? 'bg-orange-50 text-orange-900'
+              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
               }`}
           >
             <MessageSquare className="w-4 h-4 shrink-0" />

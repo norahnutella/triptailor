@@ -25,7 +25,29 @@ type ActiveModal =
   | { type: 'reserve'; restaurant: string }
   | { type: 'bill' }
   | { type: 'addActivity'; dayNumber: number }
+  | { type: 'editActivity'; dayNumber: number; activity: ActivityItem }
   | null;
+
+const getActivityCost = (costInfo: string): number => {
+  const values = costInfo.match(/\d[\d,]*(?:\.\d+)?/g);
+  if (!values) return 0;
+  return Number(values[0].replace(/,/g, '')) || 0;
+};
+
+const getBudgetForDays = (days: DayItinerary[], travelers: number, daysCount: number) => {
+  const activityCost = days.reduce(
+    (total, day) => total + day.activities.reduce((dayTotal, activity) => {
+      const cost = getActivityCost(activity.costInfo);
+      const isGroupCost = /for group|group cost|per group/i.test(activity.costInfo);
+      return dayTotal + (isGroupCost ? cost : cost * travelers);
+    }, 0),
+    0,
+  );
+  const baseCost = travelers * (daysCount * 1150);
+  const total = baseCost + activityCost;
+
+  return { total, perPerson: total / Math.max(1, travelers) };
+};
 
 export function App() {
   const [currentScreen, setCurrentScreen] = useState<ViewScreen>('dashboard');
@@ -63,6 +85,32 @@ export function App() {
   }, [user?.id]);
 
   useEffect(() => {
+    const syncNavigationFromHistory = () => {
+      const params = new URL(window.location.href).searchParams;
+      const nextScreen = params.get('screen') as ViewScreen | null;
+      const validScreens: ViewScreen[] = ['dashboard', 'create', 'itinerary', 'profile', 'contact'];
+
+      if (nextScreen && validScreens.includes(nextScreen)) {
+        const nextDestination = params.get('destination') || undefined;
+        if (nextDestination) {
+          setSelectedDestination(nextDestination);
+        }
+        setCurrentScreen(nextScreen);
+      }
+    };
+
+    const initialScreen = new URL(window.location.href).searchParams.get('screen') as ViewScreen | null;
+    if (!initialScreen) {
+      window.history.replaceState({ screen: 'dashboard' }, '', `${window.location.pathname}?screen=dashboard`);
+    }
+
+    window.addEventListener('popstate', syncNavigationFromHistory);
+    syncNavigationFromHistory();
+
+    return () => window.removeEventListener('popstate', syncNavigationFromHistory);
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     if (!user) {
       setSavedItineraries([]);
@@ -80,12 +128,13 @@ export function App() {
     return () => { cancelled = true; };
   }, [user?.id, currentTrip.id]);
 
-  const handleCreateItinerary = (tripData: { destination: string; dates: string; activities: ActivityItem[]; travelers: number; title: string; daysCount?: number; tripId: string; members: TripMember[] }) => {
+  const handleCreateItinerary = (tripData: { destination: string; dates: string; activities: ActivityItem[]; travelers: number; currency: string; title: string; daysCount?: number; tripId: string; members: TripMember[] }) => {
     if (!user) {
       setAuthModal({ isOpen: true, mode: 'login' });
       showToast('Please log in or sign up before generating an itinerary.');
       return;
     }
+    const safeTripId = tripData.tripId || `trip-${Date.now()}`;
     const destShort = tripData.destination.split(',')[0];
     const daysCount = tripData.daysCount || 4;
     const dayTitles = [
@@ -100,10 +149,12 @@ export function App() {
       const dayActs = tripData.activities.slice(startIdx, startIdx + 3);
       days.push({ dayNumber: i, dateStr: `Day ${i} • ${title}`, title, activities: dayActs.length > 0 ? dayActs : tripData.activities.slice(0, 2) });
     }
+    const budget = getBudgetForDays(days, tripData.travelers, daysCount);
     const newTrip: TripData = {
-      id: tripData.tripId, members: tripData.members, title: tripData.title, destination: tripData.destination, dates: tripData.dates,
-      daysCount, travelersCount: tripData.travelers, budgetTotal: tripData.travelers * (daysCount * 1150),
-      budgetPerPerson: daysCount * 1150, budgetTier: 'Moderate', tags: [destShort.toUpperCase(), `${daysCount} DAYS`, 'CALENDAR CURATED'], days,
+      id: safeTripId, members: tripData.members, title: tripData.title, destination: tripData.destination, dates: tripData.dates,
+      currency: tripData.currency,
+      daysCount, travelersCount: tripData.travelers, budgetTotal: budget.total,
+      budgetPerPerson: budget.perPerson, budgetTier: 'Moderate', tags: [destShort.toUpperCase(), `${daysCount} DAYS`, 'CALENDAR CURATED'], days,
     };
     setCurrentTrip(newTrip);
     setActivities(days[0]?.activities || []);
@@ -113,14 +164,25 @@ export function App() {
   };
 
   const handleAddActivity = (newAct: ActivityItem, targetDay: number = 1) => {
-    setCurrentTrip((prev) => ({ ...prev, days: prev.days.map((day) => day.dayNumber === targetDay ? { ...day, activities: [...(day.activities || []), newAct] } : day) }));
+    setCurrentTrip((prev) => {
+      const days = prev.days.map((day) => {
+        const activities = (day.activities || []).filter((activity) => activity.id !== newAct.id);
+        return day.dayNumber === targetDay ? { ...day, activities: [...activities, newAct] } : { ...day, activities };
+      });
+      const budget = getBudgetForDays(days, prev.travelersCount, prev.daysCount);
+      return { ...prev, days, budgetTotal: budget.total, budgetPerPerson: budget.perPerson };
+    });
     setActivities((prev) => [...prev, newAct]);
     setIsCurrentTripSaved(false);
     showToast(`Added "${newAct.title}" to Day ${targetDay} itinerary!`);
   };
 
   const handleRemoveActivity = (activityId: string, dayNumber: number) => {
-    setCurrentTrip((prev) => ({ ...prev, days: prev.days.map((day) => day.dayNumber === dayNumber ? { ...day, activities: (day.activities || []).filter((a) => a.id !== activityId) } : day) }));
+    setCurrentTrip((prev) => {
+      const days = prev.days.map((day) => day.dayNumber === dayNumber ? { ...day, activities: (day.activities || []).filter((a) => a.id !== activityId) } : day);
+      const budget = getBudgetForDays(days, prev.travelersCount, prev.daysCount);
+      return { ...prev, days, budgetTotal: budget.total, budgetPerPerson: budget.perPerson };
+    });
     setActivities((prev) => prev.filter((a) => a.id !== activityId));
     setIsCurrentTripSaved(false);
     showToast('Activity removed from timeline');
@@ -212,10 +274,25 @@ export function App() {
       showToast('Please log in or sign up before creating a trip.');
       return;
     }
-    if (destination) setSelectedDestination(destination);
+
+    if (destination) {
+      setSelectedDestination(destination);
+    }
+
     setCurrentScreen(screen);
     setMobileSidebarOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('screen', screen);
+
+    if (destination) {
+      url.searchParams.set('destination', destination);
+    } else {
+      url.searchParams.delete('destination');
+    }
+
+    window.history.pushState({ screen, destination }, '', `${url.pathname}${url.search}${url.hash}`);
   };
 
   const handleOpenInvite = () => {
@@ -268,7 +345,7 @@ export function App() {
           <main className="flex-1 p-4 sm:p-6 lg:p-8">
             {currentScreen === 'dashboard' && <DashboardView onNavigate={handleNavigate} user={user} onOpenAuth={(mode) => setAuthModal({ isOpen: true, mode })} />}
             {currentScreen === 'create' && <TripCustomizerView onNavigate={handleNavigate} onOpenInvite={handleOpenInvite} onCreateItinerary={handleCreateItinerary} initialDestination={selectedDestination} />}
-            {currentScreen === 'itinerary' && <ItineraryView onNavigate={handleNavigate} onOpenInvite={handleOpenInvite} onOpenReserve={(restaurant) => setModalState({ type: 'reserve', restaurant })} onOpenBill={() => setModalState({ type: 'bill' })} onOpenAddActivity={(dayNumber) => setModalState({ type: 'addActivity', dayNumber })} onOpenPrint={user ? () => setIsPrintModalOpen(true) : undefined} onOpenChat={user ? () => setIsChatDrawerOpen(true) : undefined} unreadChatCount={unreadChatCount} onRemoveActivity={handleRemoveActivity} currentTrip={currentTrip} user={user} onRegenerate={handleRegenerateItinerary} onUpdateTrip={handleUpdateTrip} onSave={handleSaveTrip} isSaved={isCurrentTripSaved} />}
+            {currentScreen === 'itinerary' && <ItineraryView onNavigate={handleNavigate} onOpenInvite={handleOpenInvite} onOpenReserve={(restaurant) => setModalState({ type: 'reserve', restaurant })} onOpenBill={() => setModalState({ type: 'bill' })} onOpenAddActivity={(dayNumber) => setModalState({ type: 'addActivity', dayNumber })} onOpenEditActivity={(activity, dayNumber) => setModalState({ type: 'editActivity', activity, dayNumber })} onOpenPrint={user ? () => setIsPrintModalOpen(true) : undefined} onOpenChat={user ? () => setIsChatDrawerOpen(true) : undefined} unreadChatCount={unreadChatCount} onRemoveActivity={handleRemoveActivity} currentTrip={currentTrip} user={user} onRegenerate={handleRegenerateItinerary} onUpdateTrip={handleUpdateTrip} onSave={handleSaveTrip} isSaved={isCurrentTripSaved} />}
             {currentScreen === 'profile' && <ProfileView onNavigate={handleNavigate} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} onOpenAuth={(mode) => setAuthModal({ isOpen: true, mode })} showToast={showToast} savedItineraries={savedItineraries} onViewSavedItinerary={handleViewSavedItinerary} onDeleteSavedItinerary={handleDeleteSavedItinerary} />}
             {currentScreen === 'contact' && <ContactView onNavigate={handleNavigate} user={user} />}
           </main>
@@ -281,7 +358,7 @@ export function App() {
       <InviteFriendsModal isOpen={modalState?.type === 'invite'} onClose={() => setModalState(null)} user={user} />
       <ReserveTableModal isOpen={modalState?.type === 'reserve'} onClose={() => setModalState(null)} restaurantName={modalState?.type === 'reserve' ? modalState.restaurant : ''} />
       <DetailedBillModal isOpen={modalState?.type === 'bill'} onClose={() => setModalState(null)} />
-      <AddActivityModal isOpen={modalState?.type === 'addActivity'} onClose={() => setModalState(null)} onAdd={handleAddActivity} dayNumber={modalState?.type === 'addActivity' ? modalState.dayNumber : 1} totalDays={currentTrip.days.length} />
+      <AddActivityModal isOpen={modalState?.type === 'addActivity' || modalState?.type === 'editActivity'} onClose={() => setModalState(null)} onAdd={handleAddActivity} dayNumber={modalState?.type === 'addActivity' || modalState?.type === 'editActivity' ? modalState.dayNumber : 1} initialActivity={modalState?.type === 'editActivity' ? modalState.activity : undefined} totalDays={currentTrip.days.length} />
     </div>
   );
 }

@@ -336,6 +336,7 @@ interface AddActivityModalProps {
   onClose: () => void;
   onAdd: (activity: ActivityItem, dayNumber: number) => void;
   dayNumber: number;
+  initialActivity?: ActivityItem;
   totalDays?: number;
 }
 
@@ -387,6 +388,7 @@ export const AddActivityModal: React.FC<AddActivityModalProps> = ({
   onClose,
   onAdd,
   dayNumber,
+  initialActivity,
   totalDays = 4,
 }) => {
   const [selectedDay, setSelectedDay] = useState(dayNumber);
@@ -401,7 +403,14 @@ export const AddActivityModal: React.FC<AddActivityModalProps> = ({
   // Update selected day whenever dayNumber prop changes
   React.useEffect(() => {
     setSelectedDay(dayNumber);
-  }, [dayNumber]);
+    setTitle(initialActivity?.title || '');
+    setTime(initialActivity?.time || '02:00 PM');
+    setDuration(initialActivity?.duration || '1.5 HRS');
+    setCost(initialActivity?.costInfo || '₹500 for group');
+    setTag(initialActivity?.categoryTag || 'Sightseeing');
+    setDescription(initialActivity?.description || '');
+    setSelectedImg(initialActivity?.image || 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800&auto=format&fit=crop&q=80');
+  }, [dayNumber, initialActivity, isOpen]);
 
   if (!isOpen) return null;
 
@@ -425,7 +434,7 @@ export const AddActivityModal: React.FC<AddActivityModalProps> = ({
     else if (tag === 'Sightseeing') actType = 'visit';
 
     const newActivity: ActivityItem = {
-      id: `custom-act-${Date.now()}`,
+      id: initialActivity?.id || `custom-act-${Date.now()}`,
       orderNumber: 99,
       time,
       duration,
@@ -455,8 +464,8 @@ export const AddActivityModal: React.FC<AddActivityModalProps> = ({
               <Plus className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-900 text-base">Add Activity to Itinerary</h3>
-              <p className="text-xs text-slate-500">Insert custom waypoint or curated stop into timeline</p>
+              <h3 className="font-bold text-slate-900 text-base">{initialActivity ? 'Edit Activity' : 'Add Activity to Itinerary'}</h3>
+              <p className="text-xs text-slate-500">{initialActivity ? 'Update the stop and its estimated cost' : 'Insert custom waypoint or curated stop into timeline'}</p>
             </div>
           </div>
           <button
@@ -602,7 +611,7 @@ export const AddActivityModal: React.FC<AddActivityModalProps> = ({
                 className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>Add to Itinerary</span>
+                <span>{initialActivity ? 'Save Activity Changes' : 'Add to Itinerary'}</span>
               </button>
             </div>
           </div>
@@ -681,11 +690,10 @@ export const AiConciergeModal: React.FC<AiConciergeModalProps> = ({ isOpen, onCl
                 </div>
               )}
               <div
-                className={`p-3 rounded-xl max-w-[80%] leading-relaxed ${
-                  m.sender === 'user'
+                className={`p-3 rounded-xl max-w-[80%] leading-relaxed ${m.sender === 'user'
                     ? 'bg-orange-600 text-white rounded-br-none'
                     : 'bg-slate-100 text-slate-800 rounded-bl-none border border-slate-200/80'
-                }`}
+                  }`}
               >
                 {m.text}
               </div>

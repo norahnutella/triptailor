@@ -125,14 +125,6 @@ export const TopNav: React.FC<TopNavProps> = ({
           </button>
         )}
 
-        <button
-          onClick={() => onNavigate('create')}
-          className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Trip</span>
-        </button>
-
         {/* Notifications */}
         {user && (
           <div className="relative" ref={notifMenuRef}>
@@ -147,49 +139,49 @@ export const TopNav: React.FC<TopNavProps> = ({
               )}
             </button>
 
-          {notifDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-lg border border-slate-200 p-3 z-50">
-              <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
-                <span className="text-xs font-bold text-slate-900">Notifications</span>
-                <div className="flex items-center gap-2 text-xs">
-                  {unreadCount > 0 && (
+            {notifDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-lg border border-slate-200 p-3 z-50">
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                  <span className="text-xs font-bold text-slate-900">Notifications</span>
+                  <div className="flex items-center gap-2 text-xs">
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={onMarkNotificationsRead}
+                        className="text-orange-600 hover:text-orange-700 font-semibold cursor-pointer"
+                      >
+                        Mark all read
+                      </button>
+                    )}
                     <button
-                      onClick={onMarkNotificationsRead}
-                      className="text-orange-600 hover:text-orange-700 font-semibold cursor-pointer"
+                      onClick={onClearNotifications}
+                      className="text-slate-400 hover:text-slate-600 cursor-pointer p-1"
+                      title="Clear all"
                     >
-                      Mark all read
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1 max-h-60 overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <p className="text-center py-6 text-xs text-slate-400">No notifications</p>
+                  ) : (
+                    notifications.map((n) => (
+                      <div
+                        key={n.id}
+                        className="p-2 rounded-lg text-left text-xs bg-slate-50 hover:bg-slate-100 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-slate-900 text-xs truncate">{n.title}</span>
+                          <span className="text-[10px] text-slate-400 shrink-0">{n.time}</span>
+                        </div>
+                        <p className="text-slate-600 mt-0.5 text-xs">{n.description}</p>
+                      </div>
+                    ))
                   )}
-                  <button
-                    onClick={onClearNotifications}
-                    className="text-slate-400 hover:text-slate-600 cursor-pointer p-1"
-                    title="Clear all"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
                 </div>
               </div>
-
-              <div className="space-y-1 max-h-60 overflow-y-auto">
-                {notifications.length === 0 ? (
-                  <p className="text-center py-6 text-xs text-slate-400">No notifications</p>
-                ) : (
-                  notifications.map((n) => (
-                    <div
-                      key={n.id}
-                      className="p-2 rounded-lg text-left text-xs bg-slate-50 hover:bg-slate-100 transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-slate-900 text-xs truncate">{n.title}</span>
-                        <span className="text-[10px] text-slate-400 shrink-0">{n.time}</span>
-                      </div>
-                      <p className="text-slate-600 mt-0.5 text-xs">{n.description}</p>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
+            )}
           </div>
         )}
 

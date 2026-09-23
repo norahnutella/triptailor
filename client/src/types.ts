@@ -89,6 +89,7 @@ export interface TripData {
   travelersCount: number;
   budgetTotal: number;
   budgetPerPerson: number;
+  currency?: string;
   budgetTier: 'Budget' | 'Moderate' | 'Premium' | 'Luxury';
   tags: string[];
   days: DayItinerary[];

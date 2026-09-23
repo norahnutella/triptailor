@@ -3,7 +3,6 @@ import {
   Calendar,
   MapPin,
   ChevronRight,
-  Plus,
   Compass,
   Check,
   Sparkles,
@@ -11,7 +10,7 @@ import {
   Search,
 } from 'lucide-react';
 import { ViewScreen, UserProfile } from '../types';
-import { RECENT_DESTINATIONS, SAVED_PLACES } from '../data/mockData';
+import { RECENT_DESTINATIONS } from '../data/mockData';
 
 interface DashboardViewProps {
   onNavigate: (screen: ViewScreen, initialDestination?: string) => void;
@@ -25,8 +24,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenAuth,
 }) => {
   const [destinationInput, setDestinationInput] = useState('');
-  const [pinnedPlaces, setPinnedPlaces] = useState<string[]>(['sp-1', 'sp-2', 'sp-3']);
   const [notification, setNotification] = useState<string | null>(null);
+  const destinationSuggestions = ['Goa, India', 'Kyoto, Japan', 'Bali, Indonesia', 'Paris, France', 'Amalfi Coast, Italy', 'Tokyo, Japan']
+    .filter((destination) => destination.toLowerCase().includes(destinationInput.trim().toLowerCase()))
+    .slice(0, 5);
 
   const displayName = user ? user.name.split(' ')[0] : 'Explorer';
 
@@ -41,16 +42,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const handleQuickSearch = (dest: string) => {
     onNavigate('create', dest);
-  };
-
-  const togglePin = (placeId: string, placeName: string) => {
-    if (pinnedPlaces.includes(placeId)) {
-      setPinnedPlaces(pinnedPlaces.filter((id) => id !== placeId));
-      showToast(`Removed "${placeName}" from saved places`);
-    } else {
-      setPinnedPlaces([...pinnedPlaces, placeId]);
-      showToast(`Saved "${placeName}" to wishlist`);
-    }
   };
 
   if (!user) {
@@ -235,6 +226,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 if (e.key === 'Enter') handleSearchSubmit();
               }}
             />
+            {destinationInput.trim() && destinationSuggestions.length > 0 && (
+              <div className="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+                <div className="px-3.5 pt-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">Real-time suggestions</div>
+                {destinationSuggestions.map((destination) => (
+                  <button
+                    key={destination}
+                    type="button"
+                    onClick={() => {
+                      setDestinationInput(destination);
+                      onNavigate('create', destination);
+                    }}
+                    className="w-full px-3.5 py-2.5 text-left text-sm font-semibold text-slate-800 hover:bg-orange-50 hover:text-orange-700 cursor-pointer"
+                  >
+                    {destination}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <button
@@ -258,80 +267,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {dest}
             </button>
           ))}
-        </div>
-      </div>
-
-      {/* Your Trips Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-900 tracking-tight">Your Trips</h2>
-          <button
-            onClick={() => onNavigate('create')}
-            className="text-xs font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1 cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>New Trip</span>
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Active Trip Card */}
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-sm transition-all flex flex-col justify-between">
-            <div className="relative h-44 overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800&auto=format&fit=crop&q=80"
-                alt="Goa Adventure"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-full text-xs font-bold text-slate-800">
-                Active Itinerary
-              </div>
-            </div>
-
-            <div className="p-5 space-y-4 flex-1 flex flex-col justify-between">
-              <div>
-                <h3 className="text-base font-bold text-slate-900">Your Goa Adventure</h3>
-                <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>12 Oct – 15 Oct (4 Days)</span>
-                  </span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1">
-                    <Users className="w-3.5 h-3.5" />
-                    <span>4 Travelers</span>
-                  </span>
-                </div>
-              </div>
-
-              <button
-                onClick={() => onNavigate('itinerary')}
-                className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2"
-              >
-                <span>Open Itinerary</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Create Trip CTA Card */}
-          <div
-            onClick={() => onNavigate('create')}
-            className="bg-slate-50 hover:bg-orange-50/50 border-2 border-dashed border-slate-300 hover:border-orange-400 rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-3 cursor-pointer transition-all min-h-64"
-          >
-            <div className="w-12 h-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-orange-600 shadow-xs">
-              <Plus className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-slate-900">Plan a New Journey</h3>
-              <p className="text-xs text-slate-500 mt-1 max-w-xs">
-                Pick dates, choose places, and let us build your day-by-day plan automatically.
-              </p>
-            </div>
-            <span className="px-4 py-2 bg-white text-orange-600 text-xs font-bold rounded-xl border border-slate-200 shadow-xs">
-              Start Planning →
-            </span>
-          </div>
         </div>
       </div>
 
@@ -362,63 +297,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <p className="text-xs text-slate-500">{dest.country}</p>
                 </div>
 
-                <button
-                  onClick={() => onNavigate('create', dest.name)}
-                  className="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
-                >
-                  Plan Trip
-                </button>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Saved Places */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-900 tracking-tight">Saved Places</h2>
-          <span className="text-xs text-slate-500 font-medium">
-            {pinnedPlaces.length} spots saved
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {SAVED_PLACES.slice(0, 3).map((place) => {
-            const isPinned = pinnedPlaces.includes(place.id);
-            return (
-              <div
-                key={place.id}
-                className="bg-white rounded-2xl border border-slate-200 p-3.5 flex items-center gap-3 shadow-xs"
-              >
-                <img
-                  src={place.image}
-                  alt={place.name}
-                  className="w-14 h-14 rounded-xl object-cover shrink-0"
-                />
-                <div className="min-w-0 flex-1">
-                  <h4 className="font-bold text-slate-900 text-xs truncate">{place.name}</h4>
-                  <p className="text-[11px] text-slate-500 truncate">{place.location}</p>
-                  <span className="text-[10px] font-semibold text-orange-600 block mt-0.5">
-                    {place.tag}
-                  </span>
-                </div>
-                <button
-                  onClick={() => togglePin(place.id, place.name)}
-                  className={`p-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${
-                    isPinned
-                      ? 'text-orange-600 bg-orange-50'
-                      : 'text-slate-400 hover:text-slate-600'
-                  }`}
-                  title={isPinned ? 'Remove from saved' : 'Save'}
-                >
-                  {isPinned ? 'Saved' : '+ Save'}
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
 };

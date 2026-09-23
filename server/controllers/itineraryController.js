@@ -19,6 +19,7 @@ function normalizeTrip(trip) {
     travelersCount: trip.travelersCount,
     budgetTotal: trip.budgetTotal,
     budgetPerPerson: trip.budgetPerPerson,
+    currency: trip.currency || 'INR',
     budgetTier: trip.budgetTier,
     tags: Array.isArray(trip.tags) ? trip.tags : [],
     days: trip.days,
@@ -45,6 +46,7 @@ function tripResponse(trip, itinerary) {
     travelersCount: trip.travelersCount,
     budgetTotal: trip.budgetTotal,
     budgetPerPerson: trip.budgetPerPerson,
+    currency: trip.currency,
     budgetTier: trip.budgetTier,
     tags: trip.tags || [],
     days: itinerary?.days || trip.days || [],
@@ -125,6 +127,7 @@ export async function saveItinerary(req, res) {
       trip.travelersCount = data.travelersCount;
       trip.budgetTotal = data.budgetTotal;
       trip.budgetPerPerson = data.budgetPerPerson;
+      trip.currency = data.currency || 'INR';
       trip.budgetTier = data.budgetTier;
       trip.tags = data.tags;
       trip.days = data.days;

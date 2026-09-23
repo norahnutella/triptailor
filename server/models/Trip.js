@@ -11,6 +11,7 @@ const tripSchema = new mongoose.Schema({
   travelersCount: Number,
   budgetTotal: Number,
   budgetPerPerson: Number,
+  currency: { type: String, default: 'INR' },
   budgetTier: String,
   tags: [String],
   days: mongoose.Schema.Types.Mixed,
