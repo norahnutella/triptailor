@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ViewScreen, ActivityItem, UserProfile, NotificationItem, TripData, DayItinerary, SavedItinerary } from './types';
-import { INITIAL_DAY1_ACTIVITIES, GOA_TRIP } from './data/mockData';
+import { ViewScreen, ActivityItem, UserProfile, NotificationItem, TripData, DayItinerary, SavedItinerary, TripMember } from './types';
+import { EMPTY_TRIP } from './data/mockData';
 import {
   getActiveUser, updateUserProfile, logoutUser, getNotifications, restoreSession,
   markNotificationsAsRead, clearAllNotifications,
@@ -35,8 +35,8 @@ export function App() {
   const [authModal, setAuthModal] = useState<{ isOpen: boolean; mode: 'login' | 'signup' }>({ isOpen: false, mode: 'login' });
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>(() => getNotifications());
-  const [currentTrip, setCurrentTrip] = useState<TripData>(GOA_TRIP);
-  const [activities, setActivities] = useState<ActivityItem[]>(INITIAL_DAY1_ACTIVITIES);
+  const [currentTrip, setCurrentTrip] = useState<TripData>(EMPTY_TRIP);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [isCurrentTripSaved, setIsCurrentTripSaved] = useState(false);
   const [savedItineraries, setSavedItineraries] = useState<SavedItinerary[]>([]);
   const [isChatDrawerOpen, setIsChatDrawerOpen] = useState(false);
@@ -80,7 +80,7 @@ export function App() {
     return () => { cancelled = true; };
   }, [user?.id, currentTrip.id]);
 
-  const handleCreateItinerary = (tripData: { destination: string; dates: string; activities: ActivityItem[]; travelers: number; title: string; daysCount?: number }) => {
+  const handleCreateItinerary = (tripData: { destination: string; dates: string; activities: ActivityItem[]; travelers: number; title: string; daysCount?: number; tripId: string; members: TripMember[] }) => {
     if (!user) {
       setAuthModal({ isOpen: true, mode: 'login' });
       showToast('Please log in or sign up before generating an itinerary.');
@@ -101,7 +101,7 @@ export function App() {
       days.push({ dayNumber: i, dateStr: `Day ${i} • ${title}`, title, activities: dayActs.length > 0 ? dayActs : tripData.activities.slice(0, 2) });
     }
     const newTrip: TripData = {
-      id: `trip-${Date.now()}`, title: tripData.title, destination: tripData.destination, dates: tripData.dates,
+      id: tripData.tripId, members: tripData.members, title: tripData.title, destination: tripData.destination, dates: tripData.dates,
       daysCount, travelersCount: tripData.travelers, budgetTotal: tripData.travelers * (daysCount * 1150),
       budgetPerPerson: daysCount * 1150, budgetTier: 'Moderate', tags: [destShort.toUpperCase(), `${daysCount} DAYS`, 'CALENDAR CURATED'], days,
     };
@@ -188,7 +188,18 @@ export function App() {
     try {
       const remaining = await deleteItinerary(user.id, tripId);
       setSavedItineraries(remaining);
-      if (currentTrip.id === tripId) setIsCurrentTripSaved(false);
+      if (currentTrip.id === tripId) {
+        const nextTrip = remaining[0];
+        if (nextTrip) {
+          setCurrentTrip(nextTrip);
+          setActivities(nextTrip.days[0]?.activities || []);
+          setIsCurrentTripSaved(true);
+        } else {
+          setCurrentTrip(EMPTY_TRIP);
+          setActivities([]);
+          setIsCurrentTripSaved(false);
+        }
+      }
       showToast('Itinerary deleted successfully.');
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Unable to delete itinerary.');

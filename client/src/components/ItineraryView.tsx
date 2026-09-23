@@ -6,7 +6,6 @@ import {
   Clock,
   Plus,
   Trash2,
-  Share2,
   Check,
   Utensils,
   Printer,
@@ -22,8 +21,7 @@ import {
   TripData,
   UserProfile,
 } from '../types';
-import { INITIAL_DAYS, POD_MEMBERS } from '../data/mockData';
-import { InteractiveMap } from './InteractiveMap';
+import { INITIAL_DAYS, POD_MEMBERS, RECENT_DESTINATIONS } from '../data/mockData';
 import {
   convertCostText,
   formatCurrency,
@@ -31,7 +29,7 @@ import {
 } from '../data/currency';
 
 interface ItineraryViewProps {
-  onNavigate: (screen: ViewScreen) => void;
+  onNavigate: (screen: ViewScreen, destination?: string) => void;
   onOpenInvite: () => void;
   onOpenReserve: (restaurant: string) => void;
   onOpenBill: () => void;
@@ -71,7 +69,6 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
   isSaved = false,
 }) => {
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
-  const [activeStop, setActiveStop] = useState(1);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
@@ -152,6 +149,42 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
 
     setIsEditing(false);
   };
+
+  if (!currentTrip?.id) {
+    return (
+      <div className="max-w-6xl mx-auto pb-16 space-y-8">
+        <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center shadow-xs">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Your itinerary is empty</h1>
+          <p className="text-sm text-slate-500 mt-2">Start a new trip to build a day-by-day travel plan.</p>
+          <button
+            onClick={() => onNavigate('create')}
+            className="mt-5 px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer"
+          >
+            Plan a new trip
+          </button>
+        </div>
+
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">Suggested destinations</h2>
+            <p className="text-sm text-slate-500 mt-1">Choose somewhere to start planning.</p>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {RECENT_DESTINATIONS.map((destination) => (
+              <button
+                key={destination.id}
+                onClick={() => onNavigate('create', destination.name)}
+                className="relative h-40 rounded-2xl overflow-hidden text-left cursor-pointer group"
+              >
+                <img src={destination.image} alt={destination.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                <span className="absolute inset-x-0 bottom-0 p-3 text-sm font-bold text-white bg-gradient-to-t from-slate-950/80 to-transparent">{destination.name}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-16">
@@ -298,28 +331,6 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
             </button>
           )}
 
-          {user && (
-            <button
-              onClick={onOpenInvite}
-              className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
-              title="Invite travel companions"
-            >
-              <Users className="w-3.5 h-3.5 text-slate-600" />
-              <span>Invite</span>
-            </button>
-          )}
-
-          <button
-            onClick={() => {
-              navigator.clipboard?.writeText(window.location.href);
-              showToast('Link copied to clipboard!');
-            }}
-            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
-          >
-            <Share2 className="w-3.5 h-3.5 text-slate-600" />
-            <span>Share</span>
-          </button>
-
           <button
             onClick={() => onNavigate('create')}
             className="px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
@@ -340,7 +351,6 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
               key={day.dayNumber || idx}
               onClick={() => {
                 setSelectedDayIndex(idx);
-                setActiveStop(1);
               }}
               className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer flex items-center gap-2 ${isActive
                 ? 'bg-slate-900 text-white shadow-xs'
@@ -356,8 +366,8 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <div className="lg:col-span-7 space-y-4">
+      <div className="grid grid-cols-1 gap-6 items-start">
+        <div className="space-y-4">
           <div className="flex items-center justify-between pb-1">
             <h2 className="text-base font-bold text-slate-900">
               Day {selectedDayIndex + 1}: {currentDay.title}
@@ -391,11 +401,7 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
               dayActivities.map((activity, idx) => (
                 <div
                   key={activity.id || idx}
-                  onClick={() => setActiveStop(idx + 1)}
-                  className={`bg-white rounded-2xl border p-4 transition-all cursor-pointer flex gap-4 items-start ${activeStop === idx + 1
-                    ? 'border-orange-500 ring-2 ring-orange-500/10 shadow-sm'
-                    : 'border-slate-200 hover:border-slate-300'
-                    }`}
+                  className="bg-white rounded-2xl border border-slate-200 hover:border-slate-300 p-4 transition-all flex gap-4 items-start"
                 >
                   <img
                     src={activity.image}
@@ -490,12 +496,7 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
           </button>
         </div>
 
-        <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-20">
-          <InteractiveMap
-            activeStop={activeStop}
-            onSelectStop={(num) => setActiveStop(num)}
-          />
-
+        <div className="space-y-4">
           <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Trip Overview
@@ -571,12 +572,6 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
                       <span>Chat</span>
                     </button>
 
-                    <button
-                      onClick={onOpenInvite}
-                      className="text-slate-500 font-bold hover:text-slate-700 cursor-pointer text-xs flex items-center gap-1"
-                    >
-                      <span>+ Invite</span>
-                    </button>
                   </div>
                 </div>
 

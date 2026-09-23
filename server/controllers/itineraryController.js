@@ -75,7 +75,9 @@ export async function listItineraries(req, res) {
     const byTrip = new Map(itineraries.map((item) => [item.tripRef.toString(), item]));
 
     res.json({
-      itineraries: trips.map((trip) => tripResponse(trip, byTrip.get(trip._id.toString()))),
+      itineraries: trips
+        .filter((trip) => byTrip.has(trip._id.toString()))
+        .map((trip) => tripResponse(trip, byTrip.get(trip._id.toString()))),
     });
   } catch (error) {
     res.status(500).json({ message: 'Unable to load saved itineraries.' });
@@ -157,12 +159,13 @@ export async function saveItinerary(req, res) {
 
 export async function deleteItinerary(req, res) {
   try {
-    const trip = await Trip.findOne({ tripId: req.params.tripId, owner: req.user._id });
-    if (!trip) return res.status(404).json({ message: 'Trip not found or you are not the owner.' });
+    const deleted = await Itinerary.findOneAndDelete({
+      tripId: req.params.tripId,
+      userId: req.user._id,
+    });
+    if (!deleted) return res.status(404).json({ message: 'Saved itinerary not found.' });
 
-    await Itinerary.deleteMany({ tripRef: trip._id });
-    await Trip.deleteOne({ _id: trip._id });
-    res.json({ message: 'Trip and itinerary deleted successfully.' });
+    res.json({ message: 'Saved itinerary deleted successfully.' });
   } catch (error) {
     res.status(500).json({ message: 'Unable to delete trip.' });
   }

@@ -14,7 +14,7 @@ import {
   Shield,
 } from 'lucide-react';
 import { UserProfile } from '../types';
-import { loginUser, signupUser, AVATAR_PRESETS } from '../data/authStore';
+import { loginUser, signupUser } from '../data/authStore';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -30,19 +30,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onSuccess,
 }) => {
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
-  
+
   // Login Form
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
-  
+
   // Signup Form
   const [signupName, setSignupName] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirmPassword, setSignupConfirmPassword] = useState('');
-  const [selectedAvatar, setSelectedAvatar] = useState(AVATAR_PRESETS[0].url);
-  const [travelPace, setTravelPace] = useState<'Relaxed' | 'Balanced' | 'Packed'>('Balanced');
   const [agreedTerms, setAgreedTerms] = useState(true);
 
   // UI state
@@ -89,7 +87,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     if (signupPassword !== signupConfirmPassword) return setErrorMsg('Passwords do not match. Please verify.');
     if (!agreedTerms) return setErrorMsg('Please accept the Terms of Service to continue.');
     setLoading(true);
-    const res = await signupUser({ name: signupName, email: signupEmail, password: signupPassword, avatar: selectedAvatar, travelPace });
+    const res = await signupUser({ name: signupName, email: signupEmail, password: signupPassword, avatar: '', travelPace: 'Balanced' });
     setLoading(false);
     if (res.success && res.user) {
       onSuccess(res.user, `Account created! Welcome to TripTailor, ${res.user.name}!`);
@@ -148,11 +146,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 setMode('login');
                 setErrorMsg(null);
               }}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                mode === 'login'
+              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${mode === 'login'
                   ? 'bg-white text-slate-900 shadow-xs'
                   : 'text-white/80 hover:text-white'
-              }`}
+                }`}
             >
               Sign In
             </button>
@@ -162,11 +159,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 setMode('signup');
                 setErrorMsg(null);
               }}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                mode === 'signup'
+              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${mode === 'signup'
                   ? 'bg-white text-slate-900 shadow-xs'
                   : 'text-white/80 hover:text-white'
-              }`}
+                }`}
             >
               Create Account
             </button>
@@ -347,56 +343,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     placeholder="Re-enter password"
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-hidden focus:bg-white focus:border-slate-900 transition-all"
                   />
-                </div>
-              </div>
-
-              {/* Avatar Preset Selector */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Choose Your Travel Avatar
-                </label>
-                <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                  {AVATAR_PRESETS.map((p, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setSelectedAvatar(p.url)}
-                      className={`relative rounded-full shrink-0 transition-transform cursor-pointer ${
-                        selectedAvatar === p.url
-                          ? 'ring-3 ring-orange-500 scale-105'
-                          : 'opacity-70 hover:opacity-100'
-                      }`}
-                    >
-                      <img
-                        src={p.url}
-                        alt={p.label}
-                        className="w-9 h-9 rounded-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Travel Pace */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Preferred Travel Pacing
-                </label>
-                <div className="grid grid-cols-3 gap-1.5 text-xs">
-                  {(['Relaxed', 'Balanced', 'Packed'] as const).map((pace) => (
-                    <button
-                      key={pace}
-                      type="button"
-                      onClick={() => setTravelPace(pace)}
-                      className={`py-1.5 rounded-xl font-bold transition-all border cursor-pointer ${
-                        travelPace === pace
-                          ? 'bg-slate-900 text-white border-slate-900'
-                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-                      }`}
-                    >
-                      {pace}
-                    </button>
-                  ))}
                 </div>
               </div>
 
