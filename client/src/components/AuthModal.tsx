@@ -97,10 +97,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
-  const handleForgotPassword = () => {
-    setInfoMsg('Password reset email delivery is not configured yet. Please contact TripTailor support.');
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
       <div
@@ -145,6 +141,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               onClick={() => {
                 setMode('login');
                 setErrorMsg(null);
+                setInfoMsg(null);
               }}
               className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${mode === 'login'
                 ? 'bg-white text-slate-900 shadow-xs'
@@ -158,6 +155,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               onClick={() => {
                 setMode('signup');
                 setErrorMsg(null);
+                setInfoMsg(null);
               }}
               className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${mode === 'signup'
                 ? 'bg-white text-slate-900 shadow-xs'
@@ -207,18 +205,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-bold text-slate-700">
-                    Password
-                  </label>
-                  <button
-                    type="button"
-                    onClick={handleForgotPassword}
-                    className="text-[11px] font-semibold text-orange-600 hover:text-orange-700 cursor-pointer"
-                  >
-                    Forgot password?
-                  </button>
-                </div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Password
+                </label>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
@@ -273,6 +262,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   onClick={() => {
                     setMode('signup');
                     setErrorMsg(null);
+                    setInfoMsg(null);
                   }}
                   className="text-orange-600 font-bold hover:underline cursor-pointer"
                 >

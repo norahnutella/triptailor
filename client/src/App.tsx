@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ViewScreen, ActivityItem, UserProfile, NotificationItem, TripData, DayItinerary, SavedItinerary, TripMember } from './types';
 import { EMPTY_TRIP } from './data/mockData';
 import {
-  getActiveUser, updateUserProfile, logoutUser, getNotifications, restoreSession,
+  getActiveUser, updateUserProfile, deleteUserAccount, logoutUser, getNotifications, restoreSession,
   markNotificationsAsRead, clearAllNotifications,
 } from './data/authStore';
 import { getUnreadGroupMessagesCount } from './data/groupChatStore';
@@ -320,6 +320,20 @@ export function App() {
     showToast('Signed out of TripTailor.');
   };
 
+  const handleDeleteAccount = async () => {
+    try {
+      await deleteUserAccount();
+      setUser(null);
+      setSavedItineraries([]);
+      setCurrentTrip(EMPTY_TRIP);
+      setCurrentScreen('dashboard');
+      showToast('Account deleted.');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Unable to delete account.');
+      throw error;
+    }
+  };
+
   const handleUpdateUser = async (updates: Partial<UserProfile>) => {
     try {
       const updated = await updateUserProfile(updates);
@@ -346,7 +360,7 @@ export function App() {
             {currentScreen === 'dashboard' && <DashboardView onNavigate={handleNavigate} user={user} onOpenAuth={(mode) => setAuthModal({ isOpen: true, mode })} />}
             {currentScreen === 'create' && <TripCustomizerView onNavigate={handleNavigate} onOpenInvite={handleOpenInvite} onCreateItinerary={handleCreateItinerary} initialDestination={selectedDestination} />}
             {currentScreen === 'itinerary' && <ItineraryView onNavigate={handleNavigate} onOpenInvite={handleOpenInvite} onOpenReserve={(restaurant) => setModalState({ type: 'reserve', restaurant })} onOpenBill={() => setModalState({ type: 'bill' })} onOpenAddActivity={(dayNumber) => setModalState({ type: 'addActivity', dayNumber })} onOpenEditActivity={(activity, dayNumber) => setModalState({ type: 'editActivity', activity, dayNumber })} onOpenPrint={user ? () => setIsPrintModalOpen(true) : undefined} onOpenChat={user ? () => setIsChatDrawerOpen(true) : undefined} unreadChatCount={unreadChatCount} onRemoveActivity={handleRemoveActivity} currentTrip={currentTrip} user={user} onRegenerate={handleRegenerateItinerary} onUpdateTrip={handleUpdateTrip} onSave={handleSaveTrip} isSaved={isCurrentTripSaved} />}
-            {currentScreen === 'profile' && <ProfileView onNavigate={handleNavigate} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} onOpenAuth={(mode) => setAuthModal({ isOpen: true, mode })} showToast={showToast} savedItineraries={savedItineraries} onViewSavedItinerary={handleViewSavedItinerary} onDeleteSavedItinerary={handleDeleteSavedItinerary} />}
+            {currentScreen === 'profile' && <ProfileView onNavigate={handleNavigate} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} onDeleteAccount={handleDeleteAccount} onOpenAuth={(mode) => setAuthModal({ isOpen: true, mode })} showToast={showToast} savedItineraries={savedItineraries} onViewSavedItinerary={handleViewSavedItinerary} onDeleteSavedItinerary={handleDeleteSavedItinerary} />}
             {currentScreen === 'contact' && <ContactView onNavigate={handleNavigate} user={user} />}
           </main>
         </div>

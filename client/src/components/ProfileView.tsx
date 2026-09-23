@@ -8,6 +8,7 @@ interface ProfileViewProps {
   user: UserProfile | null;
   onUpdateUser: (updated: UserProfile) => void | Promise<void>;
   onLogout: () => void;
+  onDeleteAccount: () => void | Promise<void>;
   onOpenAuth: (mode: 'login' | 'signup') => void;
   showToast: (msg: string) => void;
   savedItineraries: TripData[];
@@ -23,7 +24,7 @@ const AVATAR_PRESETS = [
 ];
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
-  onNavigate, user, onUpdateUser, onLogout, onOpenAuth, showToast, savedItineraries, onViewSavedItinerary, onDeleteSavedItinerary,
+  onNavigate, user, onUpdateUser, onLogout, onDeleteAccount, onOpenAuth, showToast, savedItineraries, onViewSavedItinerary, onDeleteSavedItinerary,
 }) => {
 
 
@@ -32,6 +33,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [avatar, setAvatar] = useState(user?.avatar || '');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -97,6 +99,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     }
   };
 
+  const deleteAccount = async () => {
+    const confirmed = window.confirm('Delete your account and all saved trips, itineraries, and messages? This cannot be undone.');
+    if (!confirmed) return;
+    setDeletingAccount(true);
+    try {
+      await onDeleteAccount();
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto space-y-5 pb-12">
       <div className="flex items-center justify-between">
@@ -141,6 +154,18 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       <section className="bg-white border border-slate-200 rounded-2xl p-5">
         <div className="flex items-center justify-between mb-4"><h2 className="font-bold text-slate-900">Saved itineraries</h2><span className="text-xs text-slate-500">{savedItineraries.length} saved</span></div>
         {savedItineraries.length === 0 ? <p className="text-sm text-slate-500 py-4">No saved itineraries yet.</p> : <div className="space-y-2">{savedItineraries.map((trip) => <div key={trip.id} className="flex items-center justify-between gap-3 border border-slate-200 rounded-xl p-3"><button onClick={() => onViewSavedItinerary(trip)} className="text-left min-w-0"><p className="text-sm font-bold text-slate-900 truncate">{trip.title}</p><p className="text-xs text-slate-500">{trip.destination} · {trip.dates}</p></button><button onClick={() => onDeleteSavedItinerary(trip.id)} className="p-2 text-slate-400 hover:text-red-600" title="Delete itinerary"><Trash2 className="w-4 h-4" /></button></div>)}</div>}
+      </section>
+
+      <section className="border border-red-200 bg-red-50/70 rounded-2xl p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="font-bold text-red-900">Delete account</h2>
+            <p className="text-xs text-red-800/75 mt-1">Permanently remove your account and all associated data.</p>
+          </div>
+          <button onClick={deleteAccount} disabled={deletingAccount} className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-red-300 text-red-700 text-sm font-bold hover:bg-red-100 disabled:opacity-60 disabled:cursor-wait">
+            <Trash2 className="w-4 h-4" />{deletingAccount ? 'Deleting...' : 'Delete account'}
+          </button>
+        </div>
       </section>
     </div>
   );

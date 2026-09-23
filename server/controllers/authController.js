@@ -2,6 +2,9 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import Trip from '../models/Trip.js';
+import Itinerary from '../models/Itinerary.js';
+import TripMessage from '../models/TripMessage.js';
 
 function publicUser(user) {
   return {
@@ -183,6 +186,26 @@ export async function updateMe(req, res) {
     return res.status(400).json({
       message: 'Unable to update your profile.'
     });
+  }
+}
+
+export async function deleteMe(req, res) {
+  try {
+    const userId = req.user._id;
+    const ownedTrips = await Trip.find({ owner: userId }).select('_id tripId');
+    const ownedTripIds = ownedTrips.map((trip) => trip._id);
+    const ownedTripKeys = ownedTrips.map((trip) => trip.tripId);
+
+    await TripMessage.deleteMany({ trip: { $in: ownedTripIds } });
+    await Itinerary.deleteMany({ $or: [{ userId }, { tripRef: { $in: ownedTripIds } }, { tripId: { $in: ownedTripKeys } }] });
+    await Trip.deleteMany({ owner: userId });
+    await Trip.updateMany({ members: userId }, { $pull: { members: userId } });
+    await User.deleteOne({ _id: userId });
+
+    return res.json({ message: 'Account and associated data deleted.' });
+  } catch (error) {
+    console.error('delete account error', error);
+    return res.status(500).json({ message: 'Unable to delete the account right now.' });
   }
 }
 

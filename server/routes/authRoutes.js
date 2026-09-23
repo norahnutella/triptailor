@@ -5,6 +5,7 @@ import {
   register,
   me,
   updateMe,
+  deleteMe,
   changePassword,
   forgotPassword,
   resetPassword
@@ -19,6 +20,7 @@ router.post('/login', login);
 
 router.get('/me', requireAuth, me);
 router.put('/me', requireAuth, updateMe);
+router.delete('/me', requireAuth, deleteMe);
 
 // Password management
 router.put('/change-password', requireAuth, changePassword);

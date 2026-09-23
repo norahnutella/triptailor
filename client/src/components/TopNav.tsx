@@ -92,7 +92,7 @@ export const TopNav: React.FC<TopNavProps> = ({
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="relative w-full">
+        {user && <div className="relative w-full">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
@@ -102,7 +102,7 @@ export const TopNav: React.FC<TopNavProps> = ({
             placeholder="Search trips or places..."
             className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-hidden focus:bg-white focus:border-slate-400 transition-colors"
           />
-        </div>
+        </div>}
       </div>
 
       {/* Right Controls: New Trip, Notifications, Profile */}

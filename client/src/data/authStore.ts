@@ -65,6 +65,11 @@ export async function updateUserProfile(updates: Partial<UserProfile>): Promise<
   return res.user;
 }
 
+export async function deleteUserAccount(): Promise<void> {
+  await apiRequest('/auth/me', { method: 'DELETE' });
+  logoutUser();
+}
+
 export async function restoreSession(): Promise<UserProfile | null> {
   if (!getAuthToken()) return null;
   try {

@@ -57,6 +57,10 @@ export const InviteFriendsModal: React.FC<InviteModalProps> = ({ isOpen, onClose
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !tripId) return;
+    if (email.trim().toLowerCase() === user?.email?.toLowerCase()) {
+      setMessage('You are already part of this trip.');
+      return;
+    }
     setSending(true);
     setMessage(null);
     try {
@@ -691,8 +695,8 @@ export const AiConciergeModal: React.FC<AiConciergeModalProps> = ({ isOpen, onCl
               )}
               <div
                 className={`p-3 rounded-xl max-w-[80%] leading-relaxed ${m.sender === 'user'
-                    ? 'bg-orange-600 text-white rounded-br-none'
-                    : 'bg-slate-100 text-slate-800 rounded-bl-none border border-slate-200/80'
+                  ? 'bg-orange-600 text-white rounded-br-none'
+                  : 'bg-slate-100 text-slate-800 rounded-bl-none border border-slate-200/80'
                   }`}
               >
                 {m.text}

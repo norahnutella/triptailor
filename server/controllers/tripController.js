@@ -70,6 +70,7 @@ export async function createTrip(req, res) {
     if (!title) return res.status(400).json({ message: 'Trip name is required.' });
     const requestedIds = Array.isArray(req.body.memberIds) ? req.body.memberIds.map(String) : [];
     const uniqueIds = [...new Set(requestedIds)].filter((id) => id !== req.user._id.toString());
+    if (requestedIds.includes(req.user._id.toString())) return res.status(400).json({ message: 'You are already the trip owner.' });
     const members = uniqueIds.length ? await User.find({ _id: { $in: uniqueIds } }).select('_id') : [];
     const trip = await Trip.create({ tripId: `trip-${crypto.randomUUID()}`, title, owner: req.user._id, members: members.map((member) => member._id) });
     await trip.populate('owner', 'name email avatar role');
@@ -114,9 +115,12 @@ export async function addMember(req, res) {
   try {
     const trip = await Trip.findOne({ tripId: req.params.tripId, owner: req.user._id });
     if (!trip) return res.status(404).json({ message: 'Trip not found or only the trip owner can add members.' });
-    const user = await User.findOne({ _id: req.body.userId }).select('_id name email avatar role');
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const user = email
+      ? await User.findOne({ email }).select('_id name email avatar role')
+      : await User.findOne({ _id: req.body.userId }).select('_id name email avatar role');
     if (!user) return res.status(404).json({ message: 'That TripTailor user was not found.' });
-    if (user._id.toString() === req.user._id.toString()) return res.status(400).json({ message: 'You are already the trip owner.' });
+    if (user.email.toLowerCase() === req.user.email.toLowerCase()) return res.status(400).json({ message: 'You are already the trip owner.' });
     if (!trip.members.some((id) => id.toString() === user._id.toString())) trip.members.push(user._id);
     await trip.save();
     await trip.populate('owner', 'name email avatar role');
