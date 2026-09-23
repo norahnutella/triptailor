@@ -335,7 +335,7 @@ export function App() {
   const handleSearchSubmit = (term: string) => { setSelectedDestination(term); setCurrentScreen('create'); };
 
   return (
-    <div className="min-h-screen bg-[#F7F9F8] text-[#26342D] font-sans flex flex-col antialiased selection:bg-orange-500/20">
+    <div className="min-h-screen bg-[#f2efe8] text-[#26352f] font-sans flex flex-col antialiased selection:bg-orange-500/20">
       {toastMessage && <div className="fixed top-4 right-4 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg border border-slate-700 flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-emerald-400" /><span>{toastMessage}</span></div>}
       <div className="flex-1 flex min-h-screen overflow-hidden">
         <Sidebar currentScreen={currentScreen} onNavigate={handleNavigate} user={user} onOpenProfile={() => setCurrentScreen('profile')} onOpenAuth={(mode) => setAuthModal({ isOpen: true, mode })} onOpenChat={user ? () => setIsChatDrawerOpen(true) : undefined} unreadChatCount={unreadChatCount} className="hidden lg:flex" />
