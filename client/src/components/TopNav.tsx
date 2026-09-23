@@ -81,12 +81,12 @@ export const TopNav: React.FC<TopNavProps> = ({
   };
 
   return (
-    <header className="h-15 bg-white/95 border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between gap-4 shrink-0 select-none z-20 sticky top-0">
+    <header className="h-14 bg-white border-b border-slate-200 px-4 sm:px-5 flex items-center justify-between gap-3 shrink-0 select-none z-20 sticky top-0">
       {/* Left: Mobile Toggle + Clean Search */}
       <div className="flex items-center gap-3 flex-1 max-w-md">
         <button
           onClick={onToggleSidebar}
-          className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 cursor-pointer"
+          className="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 cursor-pointer"
           aria-label="Toggle Navigation"
         >
           <Menu className="w-5 h-5" />
@@ -100,30 +100,18 @@ export const TopNav: React.FC<TopNavProps> = ({
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleSearchKey}
             placeholder="Search trips or places..."
-            className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-hidden focus:bg-white focus:border-slate-400 transition-colors"
+            className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-hidden focus:bg-white focus:border-slate-400 transition-colors"
           />
         </div>
       </div>
 
       {/* Right Controls: New Trip, Notifications, Profile */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        {/* Invite Friends - ONLY SHOWN WHEN AUTHENTICATED */}
-        {user && (
-          <button
-            onClick={onOpenInvite}
-            className="hidden md:flex items-center gap-1.5 px-3 py-2 bg-orange-50 hover:bg-orange-100 text-orange-700 text-xs font-bold rounded-xl transition-colors cursor-pointer border border-orange-200/60"
-            title="Invite Squad to Collaborate"
-          >
-            <Users className="w-3.5 h-3.5 text-orange-600" />
-            <span>Invite Friends</span>
-          </button>
-        )}
-
         {/* Squad Group Chat Drawer Trigger */}
         {onOpenChat && (
           <button
             onClick={onOpenChat}
-            className="relative p-2 rounded-xl text-slate-700 hover:bg-slate-100 hover:text-orange-600 transition-colors cursor-pointer flex items-center gap-1.5"
+            className="relative p-2 rounded-lg text-slate-700 hover:bg-slate-100 hover:text-orange-600 transition-colors cursor-pointer flex items-center gap-1.5"
             aria-label="Squad Chat"
             title="Open Squad Chat"
           >
@@ -150,7 +138,7 @@ export const TopNav: React.FC<TopNavProps> = ({
           <div className="relative" ref={notifMenuRef}>
             <button
               onClick={() => setNotifDropdownOpen(!notifDropdownOpen)}
-              className="relative p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+              className="relative p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
               aria-label="Notifications"
             >
               <Bell className="w-4 h-4" />
@@ -160,7 +148,7 @@ export const TopNav: React.FC<TopNavProps> = ({
             </button>
 
           {notifDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-200 p-3 z-50">
+            <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-lg border border-slate-200 p-3 z-50">
               <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
                 <span className="text-xs font-bold text-slate-900">Notifications</span>
                 <div className="flex items-center gap-2 text-xs">
@@ -189,7 +177,7 @@ export const TopNav: React.FC<TopNavProps> = ({
                   notifications.map((n) => (
                     <div
                       key={n.id}
-                      className="p-2 rounded-xl text-left text-xs bg-slate-50 hover:bg-slate-100 transition-colors"
+                      className="p-2 rounded-lg text-left text-xs bg-slate-50 hover:bg-slate-100 transition-colors"
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-slate-900 text-xs truncate">{n.title}</span>
@@ -210,7 +198,7 @@ export const TopNav: React.FC<TopNavProps> = ({
           <div className="relative" ref={profileMenuRef}>
             <button
               onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-              className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"
+              className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"
             >
               <img
                 src={user.avatar}
@@ -224,7 +212,7 @@ export const TopNav: React.FC<TopNavProps> = ({
             </button>
 
             {profileDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200 p-2 z-50">
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-lg border border-slate-200 p-2 z-50">
                 <div className="px-3 py-2 border-b border-slate-100">
                   <span className="text-xs font-bold text-slate-900 block truncate">{user.name}</span>
                   <span className="text-[11px] text-slate-500 block truncate">{user.email}</span>
@@ -236,7 +224,7 @@ export const TopNav: React.FC<TopNavProps> = ({
                       setProfileDropdownOpen(false);
                       onNavigate('profile');
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                   >
                     <User className="w-4 h-4 text-slate-400" />
                     <span>My Profile</span>
@@ -247,7 +235,7 @@ export const TopNav: React.FC<TopNavProps> = ({
                       setProfileDropdownOpen(false);
                       onOpenInvite();
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                   >
                     <Users className="w-4 h-4 text-orange-600" />
                     <span>Invite Friends</span>
@@ -258,7 +246,7 @@ export const TopNav: React.FC<TopNavProps> = ({
                       setProfileDropdownOpen(false);
                       onNavigate('itinerary');
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                   >
                     <Settings className="w-4 h-4 text-slate-400" />
                     <span>My Itinerary</span>
@@ -270,7 +258,7 @@ export const TopNav: React.FC<TopNavProps> = ({
                         setProfileDropdownOpen(false);
                         onOpenPrint();
                       }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                     >
                       <Printer className="w-4 h-4 text-orange-600" />
                       <span>Print Itinerary</span>
@@ -282,7 +270,7 @@ export const TopNav: React.FC<TopNavProps> = ({
                       setProfileDropdownOpen(false);
                       onNavigate('contact');
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                   >
                     <User className="w-4 h-4 text-slate-400" />
                     <span>Contact Support</span>
@@ -295,7 +283,7 @@ export const TopNav: React.FC<TopNavProps> = ({
                       setProfileDropdownOpen(false);
                       onLogout();
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                   >
                     <LogOut className="w-4 h-4" />
                     <span>Sign Out</span>
@@ -308,13 +296,13 @@ export const TopNav: React.FC<TopNavProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => onOpenAuth('login')}
-              className="px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+              className="px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
             >
               Log In
             </button>
             <button
               onClick={() => onOpenAuth('signup')}
-              className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer shadow-xs"
+              className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
             >
               Sign Up
             </button>

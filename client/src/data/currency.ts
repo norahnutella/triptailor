@@ -1,69 +1,250 @@
 export const CURRENCY_OPTIONS = [
-  { code: 'INR', label: 'Indian Rupee', symbol: '₹' },
-  { code: 'USD', label: 'US Dollar', symbol: '$' },
-  { code: 'EUR', label: 'Euro', symbol: '€' },
-  { code: 'GBP', label: 'British Pound', symbol: '£' },
-  { code: 'AED', label: 'UAE Dirham', symbol: 'د.إ' },
-  { code: 'JPY', label: 'Japanese Yen', symbol: '¥' },
-  { code: 'AUD', label: 'Australian Dollar', symbol: 'A$' },
-  { code: 'CAD', label: 'Canadian Dollar', symbol: 'C$' },
-  { code: 'SGD', label: 'Singapore Dollar', symbol: 'S$' },
+  {
+    code: 'USD',
+    label: 'USD ($)',
+    symbol: '$',
+    name: 'US Dollar',
+  },
+  {
+    code: 'EUR',
+    label: 'EUR (€)',
+    symbol: '€',
+    name: 'Euro',
+  },
+  {
+    code: 'GBP',
+    label: 'GBP (£)',
+    symbol: '£',
+    name: 'British Pound',
+  },
+  {
+    code: 'INR',
+    label: 'INR (₹)',
+    symbol: '₹',
+    name: 'Indian Rupee',
+  },
+  {
+    code: 'JPY',
+    label: 'JPY (¥)',
+    symbol: '¥',
+    name: 'Japanese Yen',
+  },
+  {
+    code: 'AUD',
+    label: 'AUD ($)',
+    symbol: 'A$',
+    name: 'Australian Dollar',
+  },
+  {
+    code: 'CAD',
+    label: 'CAD ($)',
+    symbol: 'C$',
+    name: 'Canadian Dollar',
+  },
+  {
+    code: 'SGD',
+    label: 'SGD ($)',
+    symbol: 'S$',
+    name: 'Singapore Dollar',
+  },
+  {
+    code: 'AED',
+    label: 'AED (د.إ)',
+    symbol: 'د.إ',
+    name: 'UAE Dirham',
+  },
 ];
 
-const FALLBACK_RATES_FROM_INR: Record<string, number> = {
+const CURRENCY_MAP: Record<string, string> = {
+  USD: 'USD',
+  EUR: 'EUR',
+  GBP: 'GBP',
+  INR: 'INR',
+  JPY: 'JPY',
+  AUD: 'AUD',
+  CAD: 'CAD',
+  SGD: 'SGD',
+  AED: 'AED',
+
+  'USD ($)': 'USD',
+  'EUR (€)': 'EUR',
+  'GBP (£)': 'GBP',
+  'INR (₹)': 'INR',
+  'JPY (¥)': 'JPY',
+  'AUD ($)': 'AUD',
+  'CAD ($)': 'CAD',
+  'SGD ($)': 'SGD',
+  'AED (د.إ)': 'AED',
+
+  '$ USD': 'USD',
+  '€ EUR': 'EUR',
+  '£ GBP': 'GBP',
+  '₹ INR': 'INR',
+  '¥ JPY': 'JPY',
+
+  '$': 'USD',
+  '€': 'EUR',
+  '£': 'GBP',
+  '₹': 'INR',
+  '¥': 'JPY',
+
+  'EU currency': 'EUR',
+};
+
+const SUPPORTED_CURRENCIES = [
+  'USD',
+  'EUR',
+  'GBP',
+  'INR',
+  'JPY',
+  'AUD',
+  'CAD',
+  'SGD',
+  'AED',
+];
+
+export function getCurrencyCode(
+  currency: string | undefined | null
+): string {
+  if (!currency) {
+    return 'INR';
+  }
+
+  const value = String(currency).trim();
+
+  if (CURRENCY_MAP[value]) {
+    return CURRENCY_MAP[value];
+  }
+
+  const upperValue = value.toUpperCase();
+
+  for (const code of SUPPORTED_CURRENCIES) {
+    if (upperValue.includes(code)) {
+      return code;
+    }
+  }
+
+  return 'INR';
+};
+
+/*
+ * Base currency = INR.
+ *
+ * These are fallback rates:
+ * 1 INR = rate of target currency.
+ */
+export const RATES_FROM_INR: Record<string, number> = {
   INR: 1,
   USD: 0.012,
   EUR: 0.011,
   GBP: 0.0095,
-  AED: 0.044,
   JPY: 1.75,
   AUD: 0.018,
   CAD: 0.016,
-  SGD: 0.015,
+  SGD: 0.016,
+  AED: 0.044,
 };
 
-let cachedRates: Record<string, number> | null = null;
+/*
+ * Returns the complete conversion-rate map.
+ *
+ * ItineraryView uses:
+ * getRatesFromINR().then((rates) => ...)
+ */
+export function getRatesFromINR(): Promise<Record<string, number>> {
+  return Promise.resolve({ ...RATES_FROM_INR });
+}
 
-export async function getRatesFromINR(): Promise<Record<string, number>> {
-  if (cachedRates) return cachedRates;
-  try {
-    const response = await fetch('https://open.er-api.com/v6/latest/INR');
-    const data = await response.json();
-    if (data?.rates) {
-      cachedRates = { ...FALLBACK_RATES_FROM_INR, ...data.rates, INR: 1 };
-      return cachedRates as Record<string, number>;
-    }
-  } catch {
-    // Keep the local fallback when live rates are unavailable.
+/*
+ * Convert an INR amount into the selected currency.
+ */
+export function convertFromINR(
+  amount: number,
+  currency: string | undefined | null = 'INR',
+  rates: Record<string, number> = RATES_FROM_INR
+): number {
+  const currencyCode = getCurrencyCode(currency);
+  const rate = rates[currencyCode] ?? RATES_FROM_INR[currencyCode] ?? 1;
+
+  return amount * rate;
+}
+
+export function formatCurrency(
+  amount: number | string | null | undefined,
+  currency: string | undefined | null = 'INR',
+  rates: Record<string, number> = RATES_FROM_INR
+): string {
+  const numericAmount = Number(amount);
+
+  if (Number.isNaN(numericAmount)) {
+    return '₹0.00';
   }
-  cachedRates = FALLBACK_RATES_FROM_INR;
-  return cachedRates;
-}
 
-export function currencySymbol(currency: string): string {
-  return CURRENCY_OPTIONS.find((item) => item.code === currency)?.symbol || currency;
-}
+  const currencyCode = getCurrencyCode(currency);
 
-export function currencyLabel(currency: string): string {
-  return CURRENCY_OPTIONS.find((item) => item.code === currency)?.label || currency;
-}
+  const convertedAmount = convertFromINR(
+    numericAmount,
+    currencyCode,
+    rates
+  );
 
-export function convertInrAmount(amount: number, currency: string, rates: Record<string, number>): number {
-  return amount * (rates[currency] || 1);
-}
-
-export function formatCurrency(amountInr: number, currency: string, rates: Record<string, number>): string {
-  const amount = convertInrAmount(amountInr, currency, rates);
-  return new Intl.NumberFormat(undefined, {
+  return new Intl.NumberFormat('en-IN', {
     style: 'currency',
-    currency,
-    maximumFractionDigits: currency === 'JPY' ? 0 : 2,
-  }).format(amount);
+    currency: currencyCode,
+    maximumFractionDigits: 2,
+  }).format(convertedAmount);
 }
 
-export function convertCostText(costInfo: string, currency: string, rates: Record<string, number>): string {
-  if (!costInfo || costInfo.toLowerCase() === 'free') return costInfo || 'Free';
-  const match = costInfo.replace(/,/g, '').match(/(?:₹|INR\s*)?([0-9]+(?:\.[0-9]+)?)/i);
-  if (!match) return costInfo;
-  return formatCurrency(Number(match[1]), currency, rates);
+export function convertCostText(
+  text: string | null | undefined,
+  currency: string | undefined | null = 'INR',
+  rates: Record<string, number> = RATES_FROM_INR
+): string {
+  if (!text) {
+    return '';
+  }
+
+  /*
+   * Matches values such as:
+   * ₹500
+   * $500
+   * €500
+   * £500
+   * ¥500
+   * 500
+   * 1,500
+   * 1500.50
+   */
+  return text.replace(
+    /(?:₹|\$|€|£|¥|A\$|C\$|S\$|د\.إ)?\s*(\d+(?:,\d{3})*(?:\.\d+)?)/g,
+    (match, value: string) => {
+      const numericValue = Number(String(value).replace(/,/g, ''));
+
+      if (Number.isNaN(numericValue)) {
+        return match;
+      }
+
+      return formatCurrency(numericValue, currency, rates);
+    }
+  );
+}
+
+export function getCurrencySymbol(
+  currency: string | undefined | null = 'INR'
+): string {
+  const code = getCurrencyCode(currency);
+
+  const symbols: Record<string, string> = {
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    INR: '₹',
+    JPY: '¥',
+    AUD: 'A$',
+    CAD: 'C$',
+    SGD: 'S$',
+    AED: 'د.إ',
+  };
+
+  return symbols[code] || '₹';
 }
