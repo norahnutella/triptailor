@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ViewScreen, ActivityItem, UserProfile, NotificationItem, TripData, DayItinerary, SavedItinerary } from './types';
-import { INITIAL_DAY1_ACTIVITIES, EMPTY_TRIP } from './data/mockData';
+import { INITIAL_DAY1_ACTIVITIES, GOA_TRIP } from './data/mockData';
 import {
   getActiveUser, updateUserProfile, logoutUser, getNotifications, restoreSession,
   markNotificationsAsRead, clearAllNotifications,
@@ -35,8 +35,8 @@ export function App() {
   const [authModal, setAuthModal] = useState<{ isOpen: boolean; mode: 'login' | 'signup' }>({ isOpen: false, mode: 'login' });
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>(() => getNotifications());
-  const [currentTrip, setCurrentTrip] = useState<TripData>(EMPTY_TRIP);
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [currentTrip, setCurrentTrip] = useState<TripData>(GOA_TRIP);
+  const [activities, setActivities] = useState<ActivityItem[]>(INITIAL_DAY1_ACTIVITIES);
   const [isCurrentTripSaved, setIsCurrentTripSaved] = useState(false);
   const [savedItineraries, setSavedItineraries] = useState<SavedItinerary[]>([]);
   const [isChatDrawerOpen, setIsChatDrawerOpen] = useState(false);
@@ -201,9 +201,6 @@ export function App() {
 
   const handleAuthSuccess = (authenticatedUser: UserProfile, message: string) => {
     setUser(authenticatedUser);
-    setCurrentTrip(EMPTY_TRIP);
-    setActivities([]);
-    setIsCurrentTripSaved(false);
     getSavedItineraries(authenticatedUser.id).then(setSavedItineraries).catch(() => setSavedItineraries([]));
     setUnreadChatCount(getUnreadGroupMessagesCount(authenticatedUser.id));
     showToast(message);
@@ -212,9 +209,6 @@ export function App() {
   const handleLogout = () => {
     logoutUser();
     setUser(null);
-    setCurrentTrip(EMPTY_TRIP);
-    setActivities([]);
-    setIsCurrentTripSaved(false);
     setSavedItineraries([]);
     setUnreadChatCount(0);
     setCurrentScreen('dashboard');
@@ -244,7 +238,7 @@ export function App() {
         <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
           <TopNav currentScreen={currentScreen} onNavigate={handleNavigate} onOpenInvite={handleOpenInvite} onToggleSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)} user={user} onOpenAuth={(mode) => setAuthModal({ isOpen: true, mode })} onOpenProfile={() => setCurrentScreen('profile')} onLogout={handleLogout} notifications={notifications} onMarkNotificationsRead={handleMarkNotificationsRead} onClearNotifications={handleClearNotifications} onSearchSubmit={handleSearchSubmit} onOpenChat={user ? () => setIsChatDrawerOpen(true) : undefined} unreadChatCount={unreadChatCount} onOpenPrint={() => setIsPrintModalOpen(true)} />
           <main className="flex-1 p-4 sm:p-6 lg:p-8">
-            {currentScreen === 'dashboard' && <DashboardView onNavigate={handleNavigate} user={user} onOpenAuth={(mode) => setAuthModal({ isOpen: true, mode })} currentTrip={currentTrip} savedItineraries={savedItineraries} />}
+            {currentScreen === 'dashboard' && <DashboardView onNavigate={handleNavigate} user={user} onOpenAuth={(mode) => setAuthModal({ isOpen: true, mode })} />}
             {currentScreen === 'create' && <TripCustomizerView onNavigate={handleNavigate} onOpenInvite={handleOpenInvite} onCreateItinerary={handleCreateItinerary} initialDestination={selectedDestination} />}
             {currentScreen === 'itinerary' && <ItineraryView onNavigate={handleNavigate} onOpenInvite={handleOpenInvite} onOpenReserve={(restaurant) => setModalState({ type: 'reserve', restaurant })} onOpenBill={() => setModalState({ type: 'bill' })} onOpenAddActivity={(dayNumber) => setModalState({ type: 'addActivity', dayNumber })} onOpenPrint={user ? () => setIsPrintModalOpen(true) : undefined} onOpenChat={user ? () => setIsChatDrawerOpen(true) : undefined} unreadChatCount={unreadChatCount} onRemoveActivity={handleRemoveActivity} currentTrip={currentTrip} user={user} onRegenerate={handleRegenerateItinerary} onUpdateTrip={handleUpdateTrip} onSave={handleSaveTrip} isSaved={isCurrentTripSaved} />}
             {currentScreen === 'profile' && <ProfileView onNavigate={handleNavigate} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} onOpenAuth={(mode) => setAuthModal({ isOpen: true, mode })} showToast={showToast} savedItineraries={savedItineraries} onViewSavedItinerary={handleViewSavedItinerary} onDeleteSavedItinerary={handleDeleteSavedItinerary} />}

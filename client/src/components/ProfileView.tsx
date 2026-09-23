@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Check, Eye, EyeOff, Heart, KeyRound, LogOut, Mail, MapPin, Save, Trash2, User, Camera } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Camera, Check, Eye, EyeOff, Heart, KeyRound, LogOut, Mail, MapPin, Save, Trash2, User } from 'lucide-react';
 import { UserProfile, ViewScreen, TripData } from '../types';
 import { SAVED_PLACES } from '../data/mockData';
 import { apiRequest } from '../data/api';
@@ -17,6 +17,13 @@ interface ProfileViewProps {
   onDeleteSavedItinerary: (tripId: string) => void;
 }
 
+const AVATAR_PRESETS = [
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80',
+];
+
 export const ProfileView: React.FC<ProfileViewProps> = ({
   onNavigate, user, onUpdateUser, onLogout, onOpenAuth, showToast, savedItineraries, onViewSavedItinerary, onDeleteSavedItinerary,
 }) => {
@@ -32,6 +39,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPasswords, setShowPasswords] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -62,6 +70,18 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     }
   };
 
+  const handleAvatar = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/') || file.size > 5 * 1024 * 1024) {
+      showToast('Choose an image smaller than 5 MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setAvatar(String(reader.result));
+    reader.readAsDataURL(file);
+  };
+
   const changePassword = async (event: React.FormEvent) => {
     event.preventDefault();
     if (newPassword.length < 6) return showToast('New password must be at least 6 characters.');
@@ -87,30 +107,21 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
       <section className="bg-white border border-slate-200 rounded-2xl p-5">
         <div className="flex flex-col sm:flex-row gap-5 items-start">
-          <div className="flex flex-col items-center gap-2 shrink-0">
-            {avatar ? <img src={avatar} alt={name || 'Profile'} className="w-20 h-20 rounded-full object-cover border border-slate-200" /> : <div className="w-20 h-20 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><User className="w-8 h-8" /></div>}
-            <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 cursor-pointer hover:bg-slate-50">
-              <Camera className="w-3.5 h-3.5" /> Change photo
-              <input type="file" accept="image/*" className="hidden" onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = () => setAvatar(typeof reader.result === 'string' ? reader.result : '');
-                reader.readAsDataURL(file);
-              }} />
-            </label>
+          <div className="relative">
+            {avatar ? <img src={avatar} alt={name || 'Profile'} className="w-24 h-24 rounded-2xl object-cover border border-slate-200" /> : <div className="w-24 h-24 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center"><User className="w-8 h-8" /></div>}
+            <button onClick={() => fileRef.current?.click()} className="absolute -bottom-2 -right-2 w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center border-2 border-white" title="Change profile photo"><Camera className="w-4 h-4" /></button>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatar} />
           </div>
-          <div className="w-full space-y-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1">Name</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:border-orange-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1">Phone number</label>
-              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Add your phone number" className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:border-orange-500" />
-            </div>
-            <div className="flex items-center gap-2 text-sm text-slate-600"><Mail className="w-4 h-4" />{user.email}</div>
+          <div className="flex-1 w-full">
+            <label className="block text-xs font-semibold text-slate-500 mb-1">Name</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:border-orange-500" />
+            <label className="block text-xs font-semibold text-slate-500 mt-3 mb-1">Phone number</label>
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Add your phone number" className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:border-orange-500" />
+            <div className="mt-3 flex items-center gap-2 text-sm text-slate-600"><Mail className="w-4 h-4" />{user.email}</div>
           </div>
+        </div>
+        <div className="mt-5 flex flex-wrap gap-2">
+          {AVATAR_PRESETS.map((url) => <button key={url} onClick={() => setAvatar(url)} className={`rounded-xl overflow-hidden border-2 ${avatar === url ? 'border-orange-500' : 'border-transparent'}`}><img src={url} className="w-10 h-10 object-cover" /></button>)}
         </div>
         <div className="mt-5 flex justify-end"><button disabled={saving} onClick={saveProfile} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 text-white text-sm font-bold disabled:opacity-60"><Save className="w-4 h-4" />{saving ? 'Saving...' : 'Save profile'}</button></div>
       </section>
@@ -137,8 +148,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       </section>
 
       <section className="bg-white border border-slate-200 rounded-2xl p-5">
-        <div className="flex items-center justify-between mb-4"><h2 className="font-bold text-slate-900">Saved places</h2><span className="text-xs text-slate-500">0 places</span></div>
-        <p className="text-sm text-slate-500 py-2">No saved places yet.</p>
+        <div className="flex items-center justify-between mb-4"><h2 className="font-bold text-slate-900">Saved places</h2><span className="text-xs text-slate-500">{SAVED_PLACES.length} places</span></div>
+        <div className="grid sm:grid-cols-3 gap-3">
+          {SAVED_PLACES.map((place) => <div key={place.id} className="border border-slate-200 rounded-xl overflow-hidden"><img src={place.image} alt={place.name} className="w-full h-28 object-cover" /><div className="p-3"><p className="text-sm font-bold text-slate-900">{place.name}</p><p className="text-xs text-slate-500 flex items-center gap-1 mt-1"><MapPin className="w-3 h-3" />{place.location}</p></div></div>)}
+        </div>
       </section>
 
       <section className="bg-white border border-slate-200 rounded-2xl p-5">

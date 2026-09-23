@@ -99,8 +99,13 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
     };
   }, [user?.currency]);
 
-  const daysData = currentTrip?.days || INITIAL_DAYS;
-  const currentDay = daysData[selectedDayIndex] || daysData[0];
+  const daysData = currentTrip?.days?.length ? currentTrip.days : INITIAL_DAYS;
+  const currentDay = daysData[selectedDayIndex] || daysData[0] || {
+    dayNumber: 1,
+    dateStr: 'Day 1',
+    title: 'Start planning your trip',
+    activities: [],
+  };
 
   const tripTitle =
     currentTrip?.title || 'Your Trip Itinerary';
@@ -338,8 +343,8 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
                 setActiveStop(1);
               }}
               className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer flex items-center gap-2 ${isActive
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
                 }`}
             >
               <span>Day {idx + 1}</span>
@@ -388,8 +393,8 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
                   key={activity.id || idx}
                   onClick={() => setActiveStop(idx + 1)}
                   className={`bg-white rounded-2xl border p-4 transition-all cursor-pointer flex gap-4 items-start ${activeStop === idx + 1
-                      ? 'border-orange-500 ring-2 ring-orange-500/10 shadow-sm'
-                      : 'border-slate-200 hover:border-slate-300'
+                    ? 'border-orange-500 ring-2 ring-orange-500/10 shadow-sm'
+                    : 'border-slate-200 hover:border-slate-300'
                     }`}
                 >
                   <img
