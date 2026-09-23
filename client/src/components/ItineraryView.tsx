@@ -401,6 +401,10 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
                     src={activity.image}
                     alt={activity.title}
                     className="w-20 h-20 rounded-xl object-cover shrink-0"
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900&auto=format&fit=crop&q=80';
+                    }}
                   />
 
                   <div className="flex-1 min-w-0 space-y-1.5">

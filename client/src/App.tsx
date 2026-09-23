@@ -127,7 +127,24 @@ export function App() {
   };
 
   const handleRegenerateItinerary = () => {
-    setCurrentTrip((prev) => ({ ...prev, days: prev.days.map((day) => ({ ...day, activities: day.activities.length > 1 ? [...day.activities.slice(1), day.activities[0]].map((activity, index) => ({ ...activity, orderNumber: index + 1 })) : day.activities })) }));
+    setCurrentTrip((prev) => {
+      const days = prev.days.map((day) => {
+        if (day.activities.length < 2) return day;
+
+        const midpoint = Math.ceil(day.activities.length / 2);
+        const reordered = [...day.activities.slice(midpoint), ...day.activities.slice(0, midpoint)];
+        return {
+          ...day,
+          activities: reordered.map((activity, index) => ({
+            ...activity,
+            orderNumber: index + 1,
+          })),
+        };
+      });
+
+      setActivities(days[0]?.activities || []);
+      return { ...prev, days };
+    });
     setIsCurrentTripSaved(false);
     showToast('A fresh itinerary order is ready to review.');
   };

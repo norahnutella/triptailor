@@ -23,7 +23,7 @@ const activity = (id: string, title: string, type: ActivityItem['type'], image: 
 });
 
 export const INITIAL_DAY1_ACTIVITIES: ActivityItem[] = [
-  activity('a1', 'Fort Aguada', 'visit', img('photo-1590050752117-238cb0fb9d49'), '09:00 AM', '₹50'),
+  activity('a1', 'Fort Aguada', 'visit', img('photo-1500530855697-b586d89ba3ee'), '09:00 AM', '₹50'),
   activity('a2', 'Candolim Beach', 'beach', img('photo-1512343879784-a960bf40e7f2'), '12:00 PM', 'Free'),
   activity('a3', 'Local Coastal Dinner', 'dining', img('photo-1515003197210-e0cd71810b5f'), '07:30 PM', '₹700'),
 ];
