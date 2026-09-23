@@ -23,8 +23,6 @@ interface ContactViewProps {
 export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, user }) => {
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
-  const [topic, setTopic] = useState('Trip Planning & Curated Places');
-  const [urgency, setUrgency] = useState<'Normal' | 'High' | 'Urgent'>('Normal');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -185,50 +183,6 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, user }) =>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1.5">
-                    Inquiry Topic
-                  </label>
-                  <select
-                    value={topic}
-                    onChange={(e) => setTopic(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-hidden focus:bg-white focus:border-orange-500 transition-colors cursor-pointer"
-                  >
-                    <option>Trip Planning & Curated Places</option>
-                    <option>Squad Invites & Collaboration</option>
-                    <option>Dates, Calendar & Pacing</option>
-                    <option>Dining Reservations & Bills</option>
-                    <option>Account, Security & Privacy</option>
-                    <option>General Feedback</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1.5">
-                    Urgency Level
-                  </label>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {(['Normal', 'High', 'Urgent'] as const).map((lvl) => (
-                      <button
-                        key={lvl}
-                        type="button"
-                        onClick={() => setUrgency(lvl)}
-                        className={`py-2 px-1 text-center text-xs font-bold rounded-xl border transition-all cursor-pointer ${
-                          urgency === lvl
-                            ? lvl === 'Urgent'
-                              ? 'bg-red-50 border-red-300 text-red-700'
-                              : 'bg-orange-50 border-orange-300 text-orange-700'
-                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                        }`}
-                      >
-                        {lvl}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
               <div>
                 <label className="text-xs font-bold text-slate-700 block mb-1.5">
                   Subject
@@ -293,9 +247,8 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, user }) =>
                     >
                       <span className="text-xs font-bold text-slate-900 pr-2">{faq.q}</span>
                       <ChevronDown
-                        className={`w-4 h-4 text-slate-500 shrink-0 transition-transform ${
-                          isOpen ? 'rotate-180 text-orange-600' : ''
-                        }`}
+                        className={`w-4 h-4 text-slate-500 shrink-0 transition-transform ${isOpen ? 'rotate-180 text-orange-600' : ''
+                          }`}
                       />
                     </button>
                     {isOpen && (
