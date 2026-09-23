@@ -103,7 +103,7 @@ export const TripCustomizerView: React.FC<Props> = ({ onNavigate, onOpenInvite, 
 
   if (!destinationStepComplete) {
     return <div className="max-w-2xl mx-auto pb-20">
-      <div className="text-center pt-4 mb-8"><span className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-700">New trip</span><h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-2">Start with your destination</h1><p className="text-sm text-slate-600 max-w-xl mx-auto mt-2">Tell us where you want to go, then decide whether you want a trip chat before planning.</p></div>
+      <div className="text-center pt-4 mb-8"><span className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-700">New trip</span><h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-2">Start with your destination</h1><p className="text-sm text-slate-600 max-w-xl mx-auto mt-2">Choose a destination and chat option.</p></div>
       <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-7 shadow-xs space-y-6">
         <div>
           <label className="text-xs font-bold text-slate-700 block mb-2">1. Destination</label>

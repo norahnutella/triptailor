@@ -135,7 +135,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <p className="text-xs text-slate-300 mt-1">
             {mode === 'login'
               ? 'Sign in to access your pods, itineraries, and live votes.'
-              : 'Create an account to build AI itineraries and invite your travel squad.'}
+              : 'Create an account to plan and share trips.'}
           </p>
 
           {/* Mode Switcher Tabs */}
@@ -147,8 +147,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 setErrorMsg(null);
               }}
               className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${mode === 'login'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-white/80 hover:text-white'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-white/80 hover:text-white'
                 }`}
             >
               Sign In
@@ -160,8 +160,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 setErrorMsg(null);
               }}
               className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${mode === 'signup'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-white/80 hover:text-white'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-white/80 hover:text-white'
                 }`}
             >
               Create Account

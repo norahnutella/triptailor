@@ -168,7 +168,7 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
       <div className="max-w-6xl mx-auto pb-16 space-y-8">
         <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center shadow-xs">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Your itinerary is empty</h1>
-          <p className="text-sm text-slate-500 mt-2">Start a new trip to build a day-by-day travel plan.</p>
+          <p className="text-sm text-slate-500 mt-2">Start a trip to add your first stops.</p>
           <button
             onClick={() => onNavigate('create')}
             className="mt-5 px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer"

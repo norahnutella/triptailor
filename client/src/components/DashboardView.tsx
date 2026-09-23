@@ -46,15 +46,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   if (!user) {
     const features = [
-      { icon: Sparkles, title: 'Personalised planning', description: 'Tell TripTailor your destination, dates, budget and interests to shape a trip around you.' },
-      { icon: Users, title: 'Plan together', description: 'Invite friends, discuss ideas and vote on places before finalising your shared itinerary.' },
-      { icon: Compass, title: 'Discover more', description: 'Explore attractions, food spots, hotels, shopping and activities in one organised experience.' },
+      { icon: Sparkles, title: 'Personalised planning', description: 'Plans shaped around your destination and pace.' },
+      { icon: Users, title: 'Plan together', description: 'Invite friends and make decisions as a group.' },
+      { icon: Compass, title: 'Discover more', description: 'Find places, food, and activities in one view.' },
     ];
 
     const steps = [
-      ['01', 'Tell us your trip', 'Choose where you want to go, when you are travelling and what you enjoy.'],
-      ['02', 'Explore & collaborate', 'Compare recommendations, share ideas and make decisions with your group.'],
-      ['03', 'Get your itinerary', 'Turn your choices into a practical day-by-day travel plan with budget visibility.'],
+      ['01', 'Choose a destination', 'Start with a place and your dates.'],
+      ['02', 'Shape the plan', 'Pick the places and experiences you want.'],
+      ['03', 'Travel together', 'Share the finished itinerary with your group.'],
     ];
 
     const destinations = [
@@ -83,7 +83,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 Plan less. <span className="text-orange-300">Experience more.</span>
               </h1>
               <p className="text-sm sm:text-base leading-relaxed text-white/85 max-w-xl">
-                TripTailor brings travel discovery, group decisions, personalised recommendations, budgeting and day-by-day itineraries into one place.
+                Plan, budget, and share your next trip in one place.
               </p>
               <div className="flex flex-wrap gap-3 pt-1">
                 <button
@@ -107,8 +107,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <section className="space-y-6">
           <div className="max-w-2xl">
             <span className="text-xs font-bold uppercase tracking-[0.16em] text-orange-600">Why TripTailor?</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2 tracking-tight">Everything you need to turn ideas into a real trip.</h2>
-            <p className="text-sm text-slate-600 mt-2 leading-relaxed">Stop jumping between maps, review pages, chat groups and notes. TripTailor connects the planning process from first idea to final itinerary.</p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2 tracking-tight">Plan in one place.</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {features.map(({ icon: Icon, title, description }) => (
@@ -178,8 +177,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="w-12 h-12 mx-auto rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center">
             <Compass className="w-6 h-6" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Your next adventure starts here.</h2>
-          <p className="text-sm text-slate-600 max-w-lg mx-auto">Create an account to build personalised itineraries, save your favourite plans and collaborate with your travel group.</p>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Ready to plan?</h2>
+          <p className="text-sm text-slate-600 max-w-lg mx-auto">Create an account to start your first trip.</p>
           <button onClick={() => onOpenAuth?.('signup')} className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer shadow-md">
             Create your TripTailor account
           </button>
@@ -208,7 +207,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             Where would you like to travel next?
           </h1>
           <p className="text-slate-600 text-sm">
-            Enter a destination and we'll automatically generate sights, dining, and a day-by-day plan.
+            Search a destination to start planning.
           </p>
         </div>
 

@@ -85,9 +85,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, user }) =>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               Get in Touch with TripTailor
             </h1>
-            <p className="text-slate-600 text-sm mt-1 max-w-xl">
-              Have questions about your itinerary, group squad invites, or custom travel dates? Our team is always ready to assist.
-            </p>
+            <p className="text-slate-600 text-sm mt-1 max-w-xl">Questions? Send us a message.</p>
           </div>
         </div>
       </div>
@@ -100,7 +98,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, user }) =>
           </div>
           <h3 className="text-sm font-bold text-slate-900">Direct Support Line</h3>
           <p className="text-xs text-slate-500 font-medium">+1 (800) 555-TRIP</p>
-          <span className="text-[11px] text-emerald-600 font-bold block">Available 24/7 Worldwide</span>
+          <span className="text-[11px] text-emerald-600 font-bold block">24/7</span>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-2">
@@ -109,7 +107,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, user }) =>
           </div>
           <h3 className="text-sm font-bold text-slate-900">Concierge Email</h3>
           <p className="text-xs text-slate-500 font-medium">support@triptailor.app</p>
-          <span className="text-[11px] text-slate-500 block">Average response in 15 mins</span>
+          <span className="text-[11px] text-slate-500 block">Email support</span>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-2">
@@ -118,7 +116,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, user }) =>
           </div>
           <h3 className="text-sm font-bold text-slate-900">Global Hubs</h3>
           <p className="text-xs text-slate-500 font-medium">San Francisco & London</p>
-          <span className="text-[11px] text-slate-500 block">Local dispatch & concierge</span>
+          <span className="text-[11px] text-slate-500 block">Travel support</span>
         </div>
       </div>
 
@@ -128,9 +126,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, user }) =>
         <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
           <div className="border-b border-slate-100 pb-4">
             <h2 className="text-lg font-bold text-slate-900">Send Us a Message</h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Fill out the details below and our travel coordinators will get right back to you.
-            </p>
+            <p className="text-xs text-slate-500 mt-0.5">We’ll reply by email.</p>
           </div>
 
           {submittedTicket ? (
@@ -141,7 +137,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, user }) =>
               <div>
                 <h3 className="text-lg font-extrabold text-slate-900">Message Received!</h3>
                 <p className="text-xs text-slate-600 mt-1 max-w-sm mx-auto">
-                  We have assigned reference ticket <span className="font-bold text-slate-900">{submittedTicket.id}</span>. A travel coordinator will reply to <span className="font-semibold text-slate-800">{submittedTicket.email}</span> shortly.
+                  Ticket <span className="font-bold text-slate-900">{submittedTicket.id}</span> sent to <span className="font-semibold text-slate-800">{submittedTicket.email}</span>.
                 </p>
               </div>
               <button
@@ -268,9 +264,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate, user }) =>
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
               <span>TripTailor Support Guarantee</span>
             </div>
-            <p className="text-xs text-emerald-900/80 leading-relaxed">
-              Every message is routed directly to experienced human travel planners who can edit itineraries, verify local dining availability, or assist with group coordination.
-            </p>
+            <p className="text-xs text-emerald-900/80 leading-relaxed">Replies go to your email.</p>
           </div>
         </div>
       </div>
