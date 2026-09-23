@@ -41,3 +41,9 @@ export const GOA_TRIP: TripData = {
   travelersCount: 2, budgetTotal: 0, budgetPerPerson: 0, budgetTier: 'Moderate',
   tags: ['STARTER TEMPLATE', 'EDITABLE'], days: INITIAL_DAYS,
 };
+
+export const EMPTY_TRIP: TripData = {
+  id: '', title: '', destination: '', dates: '', daysCount: 0,
+  travelersCount: 1, budgetTotal: 0, budgetPerPerson: 0, budgetTier: 'Moderate',
+  tags: [], days: [],
+};
