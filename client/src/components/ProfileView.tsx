@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Check, Eye, EyeOff, Heart, KeyRound, LogOut, Mail, MapPin, Save, Trash2, User } from 'lucide-react';
+import { Check, Eye, EyeOff, Heart, KeyRound, LogOut, Mail, MapPin, Save, Trash2, User, Camera } from 'lucide-react';
 import { UserProfile, ViewScreen, TripData } from '../types';
 import { SAVED_PLACES } from '../data/mockData';
 import { apiRequest } from '../data/api';
@@ -23,6 +23,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
 
   const [name, setName] = useState(user?.name || '');
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [avatar, setAvatar] = useState(user?.avatar || '');
   const [currency, setCurrency] = useState(user?.currency || 'INR');
   const [saving, setSaving] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -34,6 +36,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   useEffect(() => {
     if (!user) return;
     setName(user.name);
+    setPhone(user.phone || '');
+    setAvatar(user.avatar || '');
     setCurrency(user.currency || 'INR');
   }, [user]);
 
@@ -51,7 +55,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const saveProfile = async () => {
     setSaving(true);
     try {
-      await onUpdateUser({ ...user, name: name.trim(), currency });
+      await onUpdateUser({ ...user, name: name.trim(), phone: phone.trim(), avatar, currency });
       showToast('Profile updated.');
     } finally {
       setSaving(false);
@@ -82,10 +86,31 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       </div>
 
       <section className="bg-white border border-slate-200 rounded-2xl p-5">
-        <div className="w-full">
-          <label className="block text-xs font-semibold text-slate-500 mb-1">Username</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:border-orange-500" />
-          <div className="mt-3 flex items-center gap-2 text-sm text-slate-600"><Mail className="w-4 h-4" />{user.email}</div>
+        <div className="flex flex-col sm:flex-row gap-5 items-start">
+          <div className="flex flex-col items-center gap-2 shrink-0">
+            {avatar ? <img src={avatar} alt={name || 'Profile'} className="w-20 h-20 rounded-full object-cover border border-slate-200" /> : <div className="w-20 h-20 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><User className="w-8 h-8" /></div>}
+            <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 cursor-pointer hover:bg-slate-50">
+              <Camera className="w-3.5 h-3.5" /> Change photo
+              <input type="file" accept="image/*" className="hidden" onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => setAvatar(typeof reader.result === 'string' ? reader.result : '');
+                reader.readAsDataURL(file);
+              }} />
+            </label>
+          </div>
+          <div className="w-full space-y-3">
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Name</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:border-orange-500" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 mb-1">Phone number</label>
+              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Add your phone number" className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:border-orange-500" />
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-600"><Mail className="w-4 h-4" />{user.email}</div>
+          </div>
         </div>
         <div className="mt-5 flex justify-end"><button disabled={saving} onClick={saveProfile} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 text-white text-sm font-bold disabled:opacity-60"><Save className="w-4 h-4" />{saving ? 'Saving...' : 'Save profile'}</button></div>
       </section>

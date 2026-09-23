@@ -8,6 +8,7 @@ function publicUser(user) {
     id: user._id.toString(),
     name: user.name,
     email: user.email,
+    phone: user.phone,
     avatar: user.avatar,
     role: user.role,
     bio: user.bio,
@@ -126,6 +127,7 @@ export async function updateMe(req, res) {
     const allowed = [
       'name',
       'email',
+      'phone',
       'avatar',
       'bio',
       'currency',
