@@ -107,7 +107,7 @@ export const TripCustomizerView: React.FC<Props> = ({ onNavigate, onOpenInvite, 
       <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-7 shadow-xs space-y-6">
         <div>
           <label className="text-xs font-bold text-slate-700 block mb-2">1. Destination</label>
-          <input value={destination} onChange={(e) => { setDestination(e.target.value); if (error) setError(''); }} placeholder="e.g. Goa, India" maxLength={120} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-hidden focus:border-orange-500 focus:bg-white" />
+          <input type="text" autoFocus value={destination} onChange={(e) => { setDestination(e.target.value); if (error) setError(''); }} placeholder="e.g. Goa, India" maxLength={120} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-hidden focus:border-orange-500 focus:bg-white" />
         </div>
         {error && <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700">{error}</div>}
         <div className="pt-3 border-t border-slate-100 flex justify-between">

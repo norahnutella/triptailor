@@ -18,7 +18,7 @@ import { AuthModal } from './components/AuthModal';
 import { ProfileModal } from './components/ProfileModal';
 import { SquadChatDrawer } from './components/SquadChatDrawer';
 import { PrintableItineraryModal } from './components/PrintableItineraryModal';
-import { InviteFriendsModal, ReserveTableModal, DetailedBillModal, AddActivityModal } from './components/Modals';
+import { AiConciergeModal, InviteFriendsModal, ReserveTableModal, DetailedBillModal, AddActivityModal } from './components/Modals';
 
 type ActiveModal =
   | { type: 'invite' }
@@ -26,6 +26,7 @@ type ActiveModal =
   | { type: 'bill' }
   | { type: 'addActivity'; dayNumber: number }
   | { type: 'editActivity'; dayNumber: number; activity: ActivityItem }
+  | { type: 'ai' }
   | null;
 
 const getActivityCost = (costInfo: string): number => {
@@ -51,7 +52,7 @@ const getBudgetForDays = (days: DayItinerary[], travelers: number, daysCount: nu
 
 export function App() {
   const [currentScreen, setCurrentScreen] = useState<ViewScreen>('dashboard');
-  const [selectedDestination, setSelectedDestination] = useState<string>('Goa, India');
+  const [selectedDestination, setSelectedDestination] = useState<string>('');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(() => getActiveUser());
   const [authModal, setAuthModal] = useState<{ isOpen: boolean; mode: 'login' | 'signup' }>({ isOpen: false, mode: 'login' });
@@ -359,7 +360,7 @@ export function App() {
           <main className="flex-1 p-4 sm:p-6 lg:p-8">
             {currentScreen === 'dashboard' && <DashboardView onNavigate={handleNavigate} user={user} onOpenAuth={(mode) => setAuthModal({ isOpen: true, mode })} />}
             {currentScreen === 'create' && <TripCustomizerView onNavigate={handleNavigate} onOpenInvite={handleOpenInvite} onCreateItinerary={handleCreateItinerary} initialDestination={selectedDestination} />}
-            {currentScreen === 'itinerary' && <ItineraryView onNavigate={handleNavigate} onOpenInvite={handleOpenInvite} onOpenReserve={(restaurant) => setModalState({ type: 'reserve', restaurant })} onOpenBill={() => setModalState({ type: 'bill' })} onOpenAddActivity={(dayNumber) => setModalState({ type: 'addActivity', dayNumber })} onOpenEditActivity={(activity, dayNumber) => setModalState({ type: 'editActivity', activity, dayNumber })} onOpenPrint={user ? () => setIsPrintModalOpen(true) : undefined} onOpenChat={user ? () => setIsChatDrawerOpen(true) : undefined} unreadChatCount={unreadChatCount} onRemoveActivity={handleRemoveActivity} currentTrip={currentTrip} user={user} onRegenerate={handleRegenerateItinerary} onUpdateTrip={handleUpdateTrip} onSave={handleSaveTrip} isSaved={isCurrentTripSaved} />}
+            {currentScreen === 'itinerary' && <ItineraryView onNavigate={handleNavigate} onOpenInvite={handleOpenInvite} onOpenReserve={(restaurant) => setModalState({ type: 'reserve', restaurant })} onOpenBill={() => setModalState({ type: 'bill' })} onOpenAddActivity={(dayNumber) => setModalState({ type: 'addActivity', dayNumber })} onOpenEditActivity={(activity, dayNumber) => setModalState({ type: 'editActivity', activity, dayNumber })} onOpenAi={() => setModalState({ type: 'ai' })} onOpenPrint={user ? () => setIsPrintModalOpen(true) : undefined} onOpenChat={user ? () => setIsChatDrawerOpen(true) : undefined} unreadChatCount={unreadChatCount} onRemoveActivity={handleRemoveActivity} currentTrip={currentTrip} user={user} onRegenerate={handleRegenerateItinerary} onUpdateTrip={handleUpdateTrip} onSave={handleSaveTrip} isSaved={isCurrentTripSaved} />}
             {currentScreen === 'profile' && <ProfileView onNavigate={handleNavigate} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} onDeleteAccount={handleDeleteAccount} onOpenAuth={(mode) => setAuthModal({ isOpen: true, mode })} showToast={showToast} savedItineraries={savedItineraries} onViewSavedItinerary={handleViewSavedItinerary} onDeleteSavedItinerary={handleDeleteSavedItinerary} />}
             {currentScreen === 'contact' && <ContactView onNavigate={handleNavigate} user={user} />}
           </main>
@@ -367,6 +368,7 @@ export function App() {
       </div>
       <SquadChatDrawer isOpen={isChatDrawerOpen} onClose={() => { setIsChatDrawerOpen(false); setUnreadChatCount(user ? getUnreadGroupMessagesCount(user.id) : 0); }} onCreateChat={() => { setIsChatDrawerOpen(false); handleNavigate('create'); }} user={user} />
       <PrintableItineraryModal isOpen={isPrintModalOpen} onClose={() => setIsPrintModalOpen(false)} trip={currentTrip} user={user} />
+      <AiConciergeModal isOpen={modalState?.type === 'ai'} onClose={() => setModalState(null)} destination={currentTrip.destination} dates={currentTrip.dates} travelers={currentTrip.travelersCount} currency={currentTrip.currency} />
       <AuthModal isOpen={authModal.isOpen} onClose={() => setAuthModal({ ...authModal, isOpen: false })} initialMode={authModal.mode} onSuccess={handleAuthSuccess} />
       {user && <ProfileModal isOpen={profileModalOpen} onClose={() => setProfileModalOpen(false)} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} />}
       <InviteFriendsModal isOpen={modalState?.type === 'invite'} onClose={() => setModalState(null)} user={user} />

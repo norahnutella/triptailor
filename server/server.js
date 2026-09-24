@@ -5,6 +5,7 @@ import { connectDB } from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import itineraryRoutes from './routes/itineraryRoutes.js';
 import tripRoutes from './routes/tripRoutes.js';
+import aiRoutes from './routes/aiRoutes.js';
 
 const app = express();
 const port = Number(process.env.PORT || 5000);
@@ -34,6 +35,7 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/itineraries', itineraryRoutes);
 app.use('/api/trips', tripRoutes);
+app.use('/api/ai', aiRoutes);
 
 app.use((err, _req, res, _next) => {
   console.error(err);

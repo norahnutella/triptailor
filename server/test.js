@@ -5,7 +5,7 @@ const files = [
   'server.js', 'config/db.js', 'middleware/authMiddleware.js',
   'models/User.js', 'models/Trip.js', 'models/Itinerary.js',
   'controllers/authController.js', 'controllers/itineraryController.js',
-  'routes/authRoutes.js', 'routes/itineraryRoutes.js'
+  'controllers/aiController.js', 'routes/authRoutes.js', 'routes/itineraryRoutes.js', 'routes/aiRoutes.js'
 ];
 for (const file of files) {
   const source = await readFile(new URL(`./${file}`, import.meta.url), 'utf8');

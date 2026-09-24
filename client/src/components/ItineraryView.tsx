@@ -13,6 +13,7 @@ import {
   Pencil,
   RefreshCw,
   Save,
+  Sparkles,
   X,
 } from 'lucide-react';
 import {
@@ -37,6 +38,7 @@ interface ItineraryViewProps {
   onOpenEditActivity?: (activity: ActivityItem, dayNum: number) => void;
   onOpenPrint?: () => void;
   onOpenChat?: () => void;
+  onOpenAi?: () => void;
   unreadChatCount?: number;
   onRemoveActivity?: (activityId: string, dayNum: number) => void;
   activitiesList?: ActivityItem[];
@@ -61,6 +63,7 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
   onOpenEditActivity,
   onOpenPrint,
   onOpenChat,
+  onOpenAi,
   unreadChatCount = 0,
   onRemoveActivity,
   currentTrip,
@@ -330,6 +333,17 @@ export const ItineraryView: React.FC<ItineraryViewProps> = ({
                   {unreadChatCount}
                 </span>
               )}
+            </button>
+          )}
+
+          {onOpenAi && (
+            <button
+              onClick={onOpenAi}
+              className="px-3.5 py-2 bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+              title="Ask OpenAI for travel suggestions"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Suggestions</span>
             </button>
           )}
 

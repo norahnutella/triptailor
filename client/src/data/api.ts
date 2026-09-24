@@ -26,6 +26,10 @@ export async function getTrip(tripId: string): Promise<TripData> { const res = a
 export async function getTrips(): Promise<TripSummary[]> { const res = await apiRequest<{ trips: TripSummary[] }>('/trips'); return res.trips; }
 export async function getTripMessages(tripId: string): Promise<TripChatMessage[]> { const res = await apiRequest<{ messages: TripChatMessage[] }>(`/trips/${encodeURIComponent(tripId)}/messages`); return res.messages; }
 export async function sendTripMessage(tripId: string, text: string): Promise<TripChatMessage> { const res = await apiRequest<{ message: TripChatMessage }>(`/trips/${encodeURIComponent(tripId)}/messages`, { method: 'POST', body: JSON.stringify({ text }) }); return res.message; }
+export async function askTravelAi(context: { destination: string; dates?: string; travelers?: number; currency?: string; request: string }): Promise<Record<string, unknown>> {
+  const res = await apiRequest<{ result: Record<string, unknown> }>('/ai/travel-plan', { method: 'POST', body: JSON.stringify(context) });
+  return res.result;
+}
 
 export async function deleteTrip(tripId: string): Promise<void> {
   await apiRequest(`/trips/${encodeURIComponent(tripId)}`, { method: 'DELETE' });

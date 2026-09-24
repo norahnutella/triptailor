@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { ActivityItem, UserProfile } from '../types';
 import { getTrip, inviteTripMember, TripMember } from '../data/tripStore';
+import { askTravelAi } from '../data/api';
 
 interface InviteModalProps {
   isOpen: boolean;
@@ -628,36 +629,39 @@ export const AddActivityModal: React.FC<AddActivityModalProps> = ({
 interface AiConciergeModalProps {
   isOpen: boolean;
   onClose: () => void;
+  destination?: string;
+  dates?: string;
+  travelers?: number;
+  currency?: string;
 }
 
-export const AiConciergeModal: React.FC<AiConciergeModalProps> = ({ isOpen, onClose }) => {
+export const AiConciergeModal: React.FC<AiConciergeModalProps> = ({ isOpen, onClose, destination = '', dates = '', travelers = 1, currency = 'INR' }) => {
   const [query, setQuery] = useState('');
+  const [working, setWorking] = useState(false);
   const [messages, setMessages] = useState<Array<{ sender: 'ai' | 'user'; text: string }>>([
     {
       sender: 'ai',
-      text: "Hello Elena! I'm TripTailor's Autonomous Travel Concierge. I've optimized your 4-day Goa itinerary with crowd-aware scheduling and low-tide beach windows. What would you like to tweak, check, or explore?",
+      text: 'Ask for places, activities, food, or a day-by-day itinerary for this trip.',
     },
   ]);
 
   if (!isOpen) return null;
 
-  const handleSend = (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
+    if (!query.trim() || working) return;
 
     const userText = query.trim();
     setMessages((prev) => [...prev, { sender: 'user', text: userText }]);
     setQuery('');
 
-    setTimeout(() => {
-      let reply = "I have reviewed your trip parameters. Based on your squad's moderate budget and seafood cravings, I recommend swapping any crowded shacks for Fisherman's Wharf or Britto's at 6 PM for optimum sunset lighting.";
-      if (userText.toLowerCase().includes('flight') || userText.toLowerCase().includes('airport')) {
-        reply = "Flights to Goa (GOI / GOX) are currently stable. The dynamic flight oracle predicts an 8% drop for mid-week return flights.";
-      } else if (userText.toLowerCase().includes('budget') || userText.toLowerCase().includes('cost')) {
-        reply = "Your group budget sits comfortably at ₹17,800 spent out of ₹20,000 allocated, leaving an extra ₹2,200 safety buffer for spontaneous boat rentals!";
-      }
-      setMessages((prev) => [...prev, { sender: 'ai', text: reply }]);
-    }, 700);
+    setWorking(true);
+    try {
+      const result = await askTravelAi({ destination, dates, travelers, currency, request: userText });
+      setMessages((prev) => [...prev, { sender: 'ai', text: formatTravelResult(result) }]);
+    } catch (error) {
+      setMessages((prev) => [...prev, { sender: 'ai', text: error instanceof Error ? error.message : 'Travel suggestions are unavailable right now.' }]);
+    } finally { setWorking(false); }
   };
 
   return (
@@ -670,10 +674,9 @@ export const AiConciergeModal: React.FC<AiConciergeModalProps> = ({ isOpen, onCl
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <h3 className="font-bold text-slate-900 text-base">TripTailor AI Concierge</h3>
-                <span className="text-[10px] font-bold bg-teal-100 text-teal-800 px-1.5 py-0.5 rounded-full">v4.2</span>
+                <h3 className="font-bold text-slate-900 text-base">Travel suggestions</h3>
               </div>
-              <p className="text-xs text-slate-500">Autonomous routing & group concierge</p>
+              <p className="text-xs text-slate-500">Powered by OpenAI</p>
             </div>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700">
@@ -744,13 +747,26 @@ export const AiConciergeModal: React.FC<AiConciergeModalProps> = ({ isOpen, onCl
           />
           <button
             type="submit"
-            className="px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white font-semibold text-xs rounded-xl flex items-center gap-1"
+            disabled={working}
+            className="px-4 py-2 bg-teal-700 hover:bg-teal-800 disabled:opacity-50 text-white font-semibold text-xs rounded-xl flex items-center gap-1"
           >
             <Send className="w-3.5 h-3.5" />
-            Ask
+            {working ? 'Thinking...' : 'Ask'}
           </button>
         </form>
       </div>
     </div>
   );
 };
+
+function formatTravelResult(result: Record<string, unknown>): string {
+  const sections: string[] = [];
+  if (typeof result.summary === 'string') sections.push(result.summary);
+  for (const key of ['places', 'activities', 'food', 'itinerary']) {
+    const value = result[key];
+    if (Array.isArray(value) && value.length) {
+      sections.push(`${key[0].toUpperCase()}${key.slice(1)}:\n${value.map((item) => typeof item === 'string' ? `- ${item}` : `- ${JSON.stringify(item)}`).join('\n')}`);
+    }
+  }
+  return sections.join('\n\n') || 'No suggestions were returned. Try asking for a specific place, activity, meal, or itinerary day.';
+}
