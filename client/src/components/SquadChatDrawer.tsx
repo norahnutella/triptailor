@@ -10,11 +10,11 @@ import {
   updateTrip, voteTripPoll,
 } from '../data/api';
 
-interface Props { isOpen: boolean; onClose: () => void; user: UserProfile | null; }
+interface Props { isOpen: boolean; onClose: () => void; user: UserProfile | null; onCreateChat?: () => void; }
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024;
 
-export const SquadChatDrawer: React.FC<Props> = ({ isOpen, onClose, user }) => {
+export const SquadChatDrawer: React.FC<Props> = ({ isOpen, onClose, user, onCreateChat }) => {
   const [trips, setTrips] = useState<TripSummary[]>([]);
   const [selected, setSelected] = useState<TripSummary | null>(null);
   const [messages, setMessages] = useState<TripChatMessage[]>([]);
@@ -42,7 +42,14 @@ export const SquadChatDrawer: React.FC<Props> = ({ isOpen, onClose, user }) => {
     try {
       const list = await getTrips();
       setTrips(list);
-      if (selected) setSelected(list.find((t) => t.id === selected.id) || null);
+      if (selected && !list.some((t) => t.id === selected.id)) {
+        setSelected(null);
+        setMessages([]);
+        setManageMembers(false);
+        setShowActions(false);
+      } else if (selected) {
+        setSelected(list.find((t) => t.id === selected.id) || null);
+      }
     } catch (e) { setError(e instanceof Error ? e.message : 'Unable to load trip chats.'); }
     finally { setLoading(false); }
   };
@@ -179,7 +186,7 @@ export const SquadChatDrawer: React.FC<Props> = ({ isOpen, onClose, user }) => {
       </div>
 
       {!selected ? <div className="flex-1 overflow-y-auto p-4 bg-slate-50/60">
-        <div className="flex items-center justify-between mb-3"><div><h4 className="text-sm font-bold text-slate-900">Your trip chats</h4><p className="text-[11px] text-slate-500">Every trip has a separate conversation.</p></div><button onClick={loadTrips} className="p-2 text-slate-500 cursor-pointer"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button></div>
+        <div className="flex items-center justify-between mb-3"><div><h4 className="text-sm font-bold text-slate-900">Your trip chats</h4><p className="text-[11px] text-slate-500">Every trip has a separate conversation.</p></div><div className="flex items-center gap-1"><button onClick={onCreateChat} disabled={!onCreateChat} className="px-2.5 py-1.5 bg-orange-600 text-white rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer disabled:opacity-50"><Plus className="w-3 h-3" />New chat</button><button onClick={loadTrips} className="p-2 text-slate-500 cursor-pointer" title="Refresh chats"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button></div></div>
         {error && <ErrorBox message={error} />}
         {loading && !trips.length ? <div className="py-12 text-center text-xs text-slate-400">Loading chats...</div> : !trips.length ? <div className="py-12 text-center"><MessageSquare className="w-9 h-9 mx-auto text-slate-300 mb-2" /><p className="text-xs font-semibold text-slate-600">No trip chats yet.</p><p className="text-[11px] text-slate-400 mt-1">Create a trip to start one.</p></div> : <div className="space-y-2">{trips.map((trip) => <button key={trip.id} onClick={() => openChat(trip)} className="w-full p-3.5 bg-white border border-slate-200 rounded-2xl text-left hover:border-orange-300 hover:bg-orange-50/40 cursor-pointer"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-700 flex items-center justify-center"><MessageSquare className="w-4 h-4" /></div><div className="flex-1 min-w-0"><div className="text-sm font-bold text-slate-900 truncate">{trip.title}</div><div className="flex items-center gap-1.5 text-[11px] text-slate-500 mt-1"><Users className="w-3 h-3" />{trip.members.length + 1} members</div></div><span className="text-slate-300 text-lg">›</span></div></button>)}</div>}
       </div> : <>

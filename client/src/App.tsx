@@ -365,7 +365,7 @@ export function App() {
           </main>
         </div>
       </div>
-      <SquadChatDrawer isOpen={isChatDrawerOpen} onClose={() => { setIsChatDrawerOpen(false); setUnreadChatCount(user ? getUnreadGroupMessagesCount(user.id) : 0); }} user={user} />
+      <SquadChatDrawer isOpen={isChatDrawerOpen} onClose={() => { setIsChatDrawerOpen(false); setUnreadChatCount(user ? getUnreadGroupMessagesCount(user.id) : 0); }} onCreateChat={() => { setIsChatDrawerOpen(false); handleNavigate('create'); }} user={user} />
       <PrintableItineraryModal isOpen={isPrintModalOpen} onClose={() => setIsPrintModalOpen(false)} trip={currentTrip} user={user} />
       <AuthModal isOpen={authModal.isOpen} onClose={() => setAuthModal({ ...authModal, isOpen: false })} initialMode={authModal.mode} onSuccess={handleAuthSuccess} />
       {user && <ProfileModal isOpen={profileModalOpen} onClose={() => setProfileModalOpen(false)} user={user} onUpdateUser={handleUpdateUser} onLogout={handleLogout} />}

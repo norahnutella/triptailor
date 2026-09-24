@@ -4,6 +4,12 @@ import { apiRequest, clearAuthToken, getAuthToken, setAuthToken } from './api';
 const ACTIVE_USER_KEY = 'triptailor_active_user_v2';
 const NOTIF_STORAGE_KEY = 'triptailor_notifications_v1';
 
+export const STRONG_PASSWORD_HINT = 'Use 8+ characters with uppercase, lowercase, a number, and a special character.';
+
+export function isStrongPassword(password: string): boolean {
+  return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(password);
+}
+
 export const AVATAR_PRESETS = [
   { label: 'Explorer', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80' },
   { label: 'Traveler', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80' },

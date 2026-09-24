@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Camera, Check, Edit3, Eye, EyeOff, Heart, KeyRound, LogOut, Mail, MapPin, Save, Trash2, User } from 'lucide-react';
 import { UserProfile, ViewScreen, TripData } from '../types';
 import { apiRequest } from '../data/api';
+import { isStrongPassword, STRONG_PASSWORD_HINT } from '../data/authStore';
 
 interface ProfileViewProps {
   onNavigate: (screen: ViewScreen) => void;
@@ -85,7 +86,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   const changePassword = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (newPassword.length < 6) return showToast('New password must be at least 6 characters.');
+    if (!isStrongPassword(newPassword)) return showToast(STRONG_PASSWORD_HINT);
     if (newPassword !== confirmPassword) return showToast('New passwords do not match.');
     try {
       await apiRequest('/auth/change-password', {
@@ -145,6 +146,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         {showPasswordForm && <form onSubmit={changePassword} className="mt-4 grid gap-3 max-w-md">
           <input type={showPasswords ? 'text' : 'password'} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Current password" className="px-3 py-2.5 rounded-xl border border-slate-200 text-sm" required />
           <input type={showPasswords ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="New password" className="px-3 py-2.5 rounded-xl border border-slate-200 text-sm" required />
+          <p className="text-[10px] text-slate-500">{STRONG_PASSWORD_HINT}</p>
           <input type={showPasswords ? 'text' : 'password'} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm new password" className="px-3 py-2.5 rounded-xl border border-slate-200 text-sm" required />
           <button type="button" onClick={() => setShowPasswords((v) => !v)} className="w-fit text-xs text-slate-500 inline-flex items-center gap-1">{showPasswords ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />} {showPasswords ? 'Hide passwords' : 'Show passwords'}</button>
           <button type="submit" className="w-fit px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-bold">Update password</button>

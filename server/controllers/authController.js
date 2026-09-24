@@ -6,6 +6,12 @@ import Trip from '../models/Trip.js';
 import Itinerary from '../models/Itinerary.js';
 import TripMessage from '../models/TripMessage.js';
 
+function isStrongPassword(password) {
+  return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(password);
+}
+
+const strongPasswordMessage = 'Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.';
+
 function publicUser(user) {
   return {
     id: user._id.toString(),
@@ -42,9 +48,9 @@ export async function register(req, res) {
       });
     }
 
-    if (password.length < 6) {
+    if (!isStrongPassword(password)) {
       return res.status(400).json({
-        message: 'Password must be at least 6 characters long.'
+        message: strongPasswordMessage
       });
     }
 
@@ -226,9 +232,9 @@ export async function changePassword(req, res) {
       });
     }
 
-    if (newPassword.length < 6) {
+    if (!isStrongPassword(newPassword)) {
       return res.status(400).json({
-        message: 'New password must be at least 6 characters long.'
+        message: strongPasswordMessage.replace('Password', 'New password')
       });
     }
 
@@ -376,9 +382,9 @@ export async function resetPassword(req, res) {
       });
     }
 
-    if (newPassword.length < 6) {
+    if (!isStrongPassword(newPassword)) {
       return res.status(400).json({
-        message: 'New password must be at least 6 characters long.'
+        message: strongPasswordMessage.replace('Password', 'New password')
       });
     }
 
